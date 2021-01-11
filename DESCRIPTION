@@ -1,4 +1,4 @@
-Package: does-np-matter
+Package: doesNPMatter
 Title: What the Package Does (One Line, Title Case)
 Version: 0.0.0.9000
 Authors@R: 
@@ -14,3 +14,11 @@ Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
+Depends: 
+    extraDistr,
+    MASS,
+    data.table,
+    drord,
+    SuperLearner
+Imports: 
+    glm2
