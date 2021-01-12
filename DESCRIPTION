@@ -19,6 +19,7 @@ Depends:
     MASS,
     data.table,
     drord,
-    SuperLearner
+    SuperLearner,
+    future
 Imports: 
     glm2

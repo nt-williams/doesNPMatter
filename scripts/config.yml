@@ -1,0 +1,23 @@
+finite-testing: 
+  nobs: 500
+  m: 10
+  reps: 10
+  machines: 10
+  
+finite: 
+  nobs: 500
+  m: 10000
+  reps: 500
+  machines: 1000
+  
+asymp:
+  nobs: 100000
+  m: 10000
+  reps: 1
+  machines: 1000
+  
+asymp-testing:
+  nobs: 100000
+  m: 10
+  reps: 1
+  machines: 10

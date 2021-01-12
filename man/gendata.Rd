@@ -8,29 +8,29 @@ gendata(
   n,
   size = 2,
   rho = 0,
-  binary_cnf = NULL,
-  cont_cnf = NULL,
+  binary_cnf,
+  cont_cnf,
   mu = NULL,
   sigma = NULL,
   randomized = FALSE
 )
 }
 \arguments{
-\item{n}{sample size.}
+\item{n}{The sample size.}
 
-\item{size}{number of categories in Y, default is 2.}
+\item{size}{Number of categories in Y, default is 2.}
 
-\item{rho}{logistic distribution informative prior, default is 0.}
+\item{rho}{Logistic distribution informative prior, default is 0.}
 
-\item{binary_cnf}{number of binary confounders, NULL means none.}
+\item{binary_cnf}{Number of binary confounders.}
 
-\item{cont_cnf}{number of continuous confounders, NUL means none.}
+\item{cont_cnf}{Size of a continuous confounder.}
 
 \item{mu}{}
 
 \item{sigma}{}
 
-\item{randomized}{simulate an randomized controlled trial (i.e., probability of treatment is 0.5)?}
+\item{randomized}{Simulate an randomized controlled trial (i.e., probability of treatment is 0.5)?}
 }
 \value{
 A \code{data.table} of the simulated data.

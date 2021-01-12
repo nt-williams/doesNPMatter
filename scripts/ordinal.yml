@@ -1,0 +1,45 @@
+default:
+  size: 8
+
+finite-testing: 
+  nobs: 500
+  m: 10
+  reps: 10
+  machines: 10
+  progfile: "/home/niw4001/doesNPMatter/ordinal-test-progress.txt"
+  errfile: "/home/niw4001/doesNPMatter/ordinal-test-error.txt"
+  respath: "/home/niw4001/doesNPMatter/tests/res/ordinal"
+  pkgs: !expr c("MASS", "extraDistr", "data.table", "drord")
+  
+finite: 
+  nobs: 500
+  m: 10000
+  reps: 500
+  machines: 1000
+  progfile: "/home/niw4001/doesNPMatter/ordinal-finite-progress.txt"
+  errfile: "/home/niw4001/doesNPMatter/ordinal-finite-error.txt"
+  respath: "/home/niw4001/doesNPMatter/data/res/ordinal"
+  pkgs: !expr c("MASS", "extraDistr", "data.table", "drord")
+  
+asymp:
+  nobs: 100000
+  m: 10000
+  reps: 1
+  machines: 1000
+  progfile: "/home/niw4001/doesNPMatter/ordinal-asymp-progress.txt"
+  errfile: "/home/niw4001/doesNPMatter/ordinal-asymp-error.txt"
+  respath: "/home/niw4001/doesNPMatter/data/res/ordinal"
+  pkgs: !expr c("MASS", "extraDistr", "data.table", "drord")
+  
+asymp-testing:
+  nobs: 100000
+  m: 10
+  reps: 1
+  machines: 10
+  progfile: !expr here::here("ordinal-test-progress.txt")
+  errfile: !expr here::here("ordinal-test-error.txt")
+  respath: !expr here::here("tests", "res", "ordinal")
+  progfile: "/home/niw4001/doesNPMatter/ordinal-test-progress.txt"
+  errfile: "/home/niw4001/doesNPMatter/ordinal-test-error.txt"
+  respath: "/home/niw4001/doesNPMatter/tests/res/ordinal"
+  pkgs: !expr c("MASS", "extraDistr", "data.table", "drord")
