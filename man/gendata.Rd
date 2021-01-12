@@ -6,6 +6,7 @@
 \usage{
 gendata(
   n,
+  reps,
   size = 2,
   rho = 0,
   binary_cnf,
@@ -17,6 +18,8 @@ gendata(
 }
 \arguments{
 \item{n}{The sample size.}
+
+\item{reps}{How many datasets should be generated from the DGM.}
 
 \item{size}{Number of categories in Y, default is 2.}
 

@@ -8,6 +8,7 @@ bias(
   context = c("binary", "ordinal", "tte"),
   seed,
   n,
+  reps,
   size,
   rho,
   binary_cnf,
@@ -23,6 +24,8 @@ bias(
 \item{seed}{Seed for reproducibility.}
 
 \item{n}{The sample size.}
+
+\item{reps}{How many datasets should be generated from the DGM.}
 
 \item{size}{Number of categories in Y, default is 2.}
 
