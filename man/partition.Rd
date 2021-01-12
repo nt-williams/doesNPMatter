@@ -16,5 +16,5 @@ Saves results files.
 Run simulations in parallel on a computing cluster.
 }
 \author{
-Nicholas Williams and Ivan Dìaz
+Nicholas Williams and Iván Díaz
 }

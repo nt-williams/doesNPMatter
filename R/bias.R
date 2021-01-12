@@ -1,3 +1,20 @@
+#' Simulate the bias of TMLE and parametric G-computation.
+#'
+#' @param context Outcome type, valid options are "binary", "ordinal", and "tte."
+#' @param seed Seed for reproducibility.
+#' @param n The sample size.
+#' @param size Number of categories in Y, default is 2.
+#' @param rho Logistic distribution informative prior, default is 0.
+#' @param binary_cnf Number of binary confounders.
+#' @param cont_cnf Size of a continuous confounder.
+#' @param mu 
+#' @param sigma 
+#' @param randomized Simulate an randomized controlled trial (i.e., probability of treatment is 0.5)?
+#'
+#' @return A list of the true value, the result from parametric G-computation, 
+#'   and the result from TMLE.
+#' 
+#' @author Nicholas Williams and Iván Díaz
 bias <- function(context = c("binary", "ordinal", "tte"), seed, n, 
                  size, rho, binary_cnf, cont_cnf, 
                  mu = NULL, sigma = NULL, randomized = FALSE) {

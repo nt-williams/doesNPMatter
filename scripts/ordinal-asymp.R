@@ -5,12 +5,10 @@
 
 .libPaths("/home/niw4001/R_local")
 
-library(config)
-
 devtools::load_all()
 
-config <- get(file = here::here("scripts", "ordinal.yml"), 
-              config = "asymp-testing")
+config <- config::get(file = here::here("scripts", "ordinal.yml"), 
+                      config = "asymp-testing")
 
 set.seed(543262)
 

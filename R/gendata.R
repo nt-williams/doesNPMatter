@@ -11,7 +11,7 @@
 #'
 #' @return A `data.table` of the simulated data.
 #' 
-#' @author Nicholas Williams and Ivan Dìaz
+#' @author Nicholas Williams and Iván Díaz
 gendata <- function(n, size = 2, rho = 0, binary_cnf, cont_cnf, 
                     mu = NULL, sigma = NULL, randomized = FALSE) {
   mixture <- rbinom(1, 1, rho)

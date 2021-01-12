@@ -4,7 +4,7 @@
 #'
 #' @return Saves results files.
 #' 
-#' @author Nicholas Williams and Ivan Dìaz
+#' @author Nicholas Williams and Iván Díaz
 partition <- function(task) {
   index <- (1:nrow(task$tasks))[(0:(nrow(task$tasks) - 1)) %/% (nrow(task$tasks) / task$machines) + 1 == task$id]
   out <- list()
