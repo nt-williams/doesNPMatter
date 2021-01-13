@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=ordinal-asymp
+#SBATCH --job-name=doesNPMatter
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=24G
@@ -9,4 +9,6 @@ echo "$SLURM_ARRAY_TASK_ID"
 
 source ~/.bashrc
 spack load -r /bxc56dm
-R CMD BATCH ordinal-asymp.R
+Rscript simulate.R ${1} ${2} ${3}
+
+exit 0

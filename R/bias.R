@@ -66,7 +66,7 @@ bias_ordinal <- function(data) {
     A <- d$trt
     cnf <- grep("^cnf", names(d), value = TRUE)
     cols <- grep("[^trt]", names(d), value = TRUE)
-    W <- as.d.frame(d[, cnf, with = FALSE])
+    W <- as.data.frame(d[, cnf, with = FALSE])
     
     on <- copy(d) # not factoring the continuous variable for now.
     off <- copy(d)
@@ -74,15 +74,16 @@ bias_ordinal <- function(data) {
     off[, trt := 0]
     
     ncnf <- length(cnf) + 2
-    tform <- as.formula(paste0("factor(outcome, ordered = TRUE)~(.)^", ncnf))
+    tform <- as.formula(paste0("factor(outcome, ordered = TRUE)~(", paste(cnf, collapse = "+"), ")^", ncnf))
     
     # calculation of the truth
-    tf <- polr(tform, d = d)
+    tf1 <- polr(tform, d = d[trt == 1, ]) # need to ask why we don't also stratify when calculating g-comp
+    tf0 <- polr(tform, d = d[trt == 0, ])
     
-    on_pred <- predict(tf, newd = on, type = 'prob')
+    on_pred <- predict(tf1, newd = on, type = 'prob')
     on_prob <- cumsum(colMeans(on_pred))[-ncol(on_pred)]
     
-    off_pred <- predict(tf, newd = off, type = 'prob')
+    off_pred <- predict(tf0, newd = off, type = 'prob')
     off_prob <- cumsum(colMeans(off_pred))[-ncol(off_pred)]
     
     true <- mean(qlogis(on_prob) - qlogis(off_prob))
@@ -101,10 +102,11 @@ bias_ordinal <- function(data) {
     # tmle calculation
     tml <- drord(out = d$outcome, treat = d$trt,
                  covar = d[, cnf, with = FALSE],
-                 treat_form = "1",
+                 treat_form = ".",
                  out_form = ".",
                  out_model = 'polr',
-                 ci = 'wald')
+                 ci = 'wald', 
+                 est_dist = FALSE)
     
     list(truth = true, param = param, tmle = tml$log_odds$est[3])
   })

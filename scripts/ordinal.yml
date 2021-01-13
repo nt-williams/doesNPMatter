@@ -1,4 +1,5 @@
 default:
+  context: "ordinal"
   size: 8
 
 finite-testing: 
@@ -13,8 +14,8 @@ finite-testing:
   
 finite: 
   nobs: 500
-  m: 10000
-  reps: 500
+  m: 1000
+  reps: 250
   machines: 1000
   progfile: "/home/niw4001/doesNPMatter/ordinal-finite-progress.txt"
   errfile: "/home/niw4001/doesNPMatter/ordinal-finite-error.txt"
@@ -23,7 +24,7 @@ finite:
   
 asymp:
   nobs: 100000
-  m: 10000
+  m: 1000
   reps: 1
   machines: 1000
   progfile: "/home/niw4001/doesNPMatter/ordinal-asymp-progress.txt"
@@ -36,9 +37,6 @@ asymp-testing:
   m: 10
   reps: 1
   machines: 10
-  progfile: !expr here::here("ordinal-test-progress.txt")
-  errfile: !expr here::here("ordinal-test-error.txt")
-  respath: !expr here::here("tests", "res", "ordinal")
   progfile: "/home/niw4001/doesNPMatter/ordinal-test-progress.txt"
   errfile: "/home/niw4001/doesNPMatter/ordinal-test-error.txt"
   respath: "/home/niw4001/doesNPMatter/tests/res/ordinal"
