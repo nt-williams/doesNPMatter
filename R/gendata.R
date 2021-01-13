@@ -61,13 +61,7 @@ gendata <- function(n, reps, size = 2, rho = 0, binary_cnf, cont_cnf,
     if (mixture == 0) {
       outcome <- trt * y1 + (1 - trt) * y0
     } else if (mixture == 1) {
-      # going to require some metaprogramming
-      # ip <- mvrnorm(1, mu = mu, Sigma = sigma)
-      # outcome <- rbinom(n, 1, 
-      #                   plogis(ip[1] + 
-      #                            ip[2] * trt + 
-      #                            ip[3] * cnf + 
-      #                            ip[4] * trt * cnf))
+      outcome <- ip(trt, cnf, size)
     }
     
     data.table(trt, cnf, outcome)

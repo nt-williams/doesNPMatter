@@ -23,17 +23,14 @@ bias <- function(context = c("binary", "ordinal", "tte"), seed, n,
   data <- gendata(n, reps, size, rho, binary_cnf, 
                   cont_cnf, mu, sigma, randomized)
   switch(match.arg(context), 
-         binary = bias_binary(data), 
+         binary = bias_binary(data, cont_cnf), 
          ordinal = bias_ordinal(data), 
          tte = bias_tte(data))
 }
 
-bias_binary <- function(data) {
+bias_binary <- function(data, cont_cnf) {
   out <- lapply(data, function(d) {
-    Y <- d$outcome
-    A <- d$trt
     cnf <- grep("^cnf", names(d), value = TRUE)
-    W <- as.matrix(d[, cnf, with = FALSE])
     
     on <- copy(d) # not factoring the continuous variable for now.
     off <- copy(d)
@@ -41,7 +38,12 @@ bias_binary <- function(data) {
     off[, trt := 0]
     
     ncnf <- length(cnf) + 2
-    tform <- as.formula(paste0("outcome~(.)^", ncnf))
+    if (cont_cnf > 0) {
+      tform <- as.formula(paste0("outcome~trt*(as.factor(cnf1)+", 
+                                 paste(cnf, collapse = "+"), ")^", ncnf))
+    } else {
+      tform <- as.formula(paste0("outcome~(.)^", ncnf))
+    }
     pform <- as.formula(paste0("outcome~trt*(", paste(cnf, collapse = "+"), ")"))
     
     tf <- lm(tform, d = d)
