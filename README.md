@@ -1,6 +1,6 @@
-# Does Nonparametric Matter? Simulations
+# "Does Nonparametric Matter?"" Simulations
 
-Nicholas Williams and Iván Díaz
+Nicholas Williams, Iván Díaz, Kara Rudolph
 
 ------------------------------------------------------------------------
 
@@ -8,6 +8,4 @@ Simulations can be executed from a linux terminal using Slurm with `sbatch simul
 
 For example, the following command would run an asymptotic simulation for an ordinal outcome in an RCT:
 
-```{}
-sbatch simulate.sh asymp ordinal TRUE
-```
+    sbatch simulate.sh asymp ordinal TRUE
