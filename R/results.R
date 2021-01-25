@@ -24,15 +24,25 @@ read_results <- function(folder, files, finite = FALSE) {
              param_bias = param - truth)][]
 }
 
-result_cdf <- function(data, limits = NULL) {
-  ggplot(data) +
+result_cdf <- function(data, limits = NULL, file = NULL) {
+  out <- 
+    ggplot(data) +
     geom_line(aes(x = abs(tmle_bias), y = 1 - ..y..), stat = 'ecdf', color = "blue") +
     geom_line(aes(x = abs(param_bias ), y = 1 - ..y..), stat = 'ecdf', color = "red") + 
     labs(x = expression(abs(Bias)), 
          y = expression(P(abs(Bias) > x))) + 
-    scale_x_continuous(expand = c(0.01, 0), limits = limits) + 
+    scale_x_continuous(expand = c(0.025, 0), limits = limits) + 
     scale_y_continuous(expand = c(0.01, 0.01)) + 
     theme_classic()
+  
+  if (!is.null(file)) {
+    ggsave(here::here("plots", file), 
+           plot = out,
+           dpi = 600, 
+           width = 4, 
+           height = 3)
+  }
+  out
 }
 
 find_files <- function(files, regex) {
