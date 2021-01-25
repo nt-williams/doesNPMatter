@@ -11,9 +11,8 @@ gendata(
   rho = 0,
   binary_cnf,
   cont_cnf,
-  mu = NULL,
-  sigma = NULL,
-  randomized = FALSE
+  randomized = FALSE,
+  seed
 )
 }
 \arguments{
@@ -29,11 +28,9 @@ gendata(
 
 \item{cont_cnf}{Size of a continuous confounder.}
 
-\item{mu}{}
-
-\item{sigma}{}
-
 \item{randomized}{Simulate an randomized controlled trial (i.e., probability of treatment is 0.5)?}
+
+\item{seed}{Seed for reproducibility.}
 }
 \value{
 A \code{data.table} of the simulated data.

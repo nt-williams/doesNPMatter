@@ -19,8 +19,8 @@ partition <- function(task) {
         bias(task$context, task$tasks$seeds[row], task$n, 
              task$reps, task$size, task$tasks$rho[row], 
              task$tasks$binary_cnf[i], task$tasks$cont_cnf[row], 
-             mu = task$mu, sigma = task$sigma, 
-             randomized = task$tasks$randomized[row])
+             randomized = task$tasks$randomized[row], 
+             parametric = task$tasks$parametric[row])
       )
     }, globals = globals, packages = task$pkgs, seed = TRUE)
     
@@ -28,6 +28,10 @@ partition <- function(task) {
       cat("error in task ", row, "\n", file = task$errfile, append = TRUE)
     }
     saveRDS(append(list(id = row), append(unlist(value(out[[i]])), task$tasks[row, ])), 
-            file.path(task$respath, paste0(task$ident, row, "_", task$tasks$randomized[row], ".rds")))
+            file.path(task$respath, paste0(task$ident, row, "_", 
+                                           task$tasks$binary_cnf[row], "_", 
+                                           task$tasks$cont_cnf[row], "_", 
+                                           task$tasks$randomized[row], 
+                                           task$tasks$parametric[row], ".rds")))
   }
 }

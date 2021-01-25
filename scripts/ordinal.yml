@@ -10,7 +10,7 @@ finite:
   progfile: !expr here::here("ordinal-test-progress.txt")
   errfile: !expr here::here("ordinal-test-error.txt")
   respath: !expr here::here("data", "res", "ordinal")
-  pkgs: !expr c("MASS", "extraDistr", "data.table", "drord")
+  pkgs: !expr c("ordinal", "extraDistr", "data.table", "drord")
   
 asymp:
   nobs: 100000
@@ -20,5 +20,5 @@ asymp:
   progfile: !expr here::here("ordinal-test-progress.txt")
   errfile: !expr here::here("ordinal-test-error.txt")
   respath: !expr here::here("data", "res", "ordinal")
-  pkgs: !expr c("MASS", "extraDistr", "data.table", "drord")
+  pkgs: !expr c("ordinal", "extraDistr", "data.table", "drord")
 

@@ -27,18 +27,28 @@ xgb3 <- create.Learner("SL.xgboost", detailed_names = TRUE,
 xgb4 <- create.Learner("SL.xgboost", detailed_names = TRUE, 
                        tune = lapply(pg, function(x) x[4]))
 
-SL_lib <- c("SL.glm", xgb1$names, xgb2$names, xgb3$names, xgb4$names)
+SL_lib <- c("SL.glm.interaction", "SL.gam", "SL.earth",
+            xgb1$names, xgb2$names, xgb3$names, xgb4$names)
+SL_lib_param <- c("SL.glm.interaction")
 
-fit_otcr <- function(data) {
+fit_otcr <- function(data, parametric = FALSE) {
   cnf <- grep("^cnf", names(data), value = TRUE)
+  n <- nrow(data)
+  V <- ifelse(n < 1000, 10L, 2L)
   
+  if (parametric) {
+    SL <- SL_lib_param
+  } else {
+    SL <- SL_lib
+  }
+
   sl <- SuperLearner(
     Y = data$outcome,
     X = as.data.frame(data[, c(cnf, "trt"), with = FALSE]),
-    SL.library = SL_lib,
+    SL.library = SL,
     family = binomial(),
     method = "method.NNloglik",
-    cvControl = SuperLearner.CV.control(V = 2L)
+    cvControl = SuperLearner.CV.control(V = V)
   )
   
   y <- as.data.table(data)$outcome
@@ -56,16 +66,24 @@ fit_otcr <- function(data) {
        Y.off = y.off)
 }
 
-fit_prop <- function(data) {
+fit_prop <- function(data, parametric = FALSE) {
   cnf <- grep("^cnf", names(data), value = TRUE)
+  n <- nrow(data)
   a <- as.data.table(data)$trt
+  V <- ifelse(n < 1000, 10L, 2L)
+  
+  if (parametric) {
+    SL <- SL_lib_param
+  } else {
+    SL <- SL_lib
+  }
+
   sl <- SuperLearner(
     Y = data$trt,
     X = as.data.frame(data[, cnf, with = FALSE]),
-    SL.library = SL_lib,
+    SL.library = SL,
     family = binomial(),
-    method = "method.NNloglik",
-    cvControl = SuperLearner.CV.control(V = 2L)
+    cvControl = SuperLearner.CV.control(V = V)
   )
 
   prob <- bound(predict(sl, data[, cnf, with = FALSE], onlySL = TRUE)$pred)
@@ -79,9 +97,9 @@ fit_tilt <- function(otcr, prop) {
   coef(glm2::glm2(Y ~ -1 + clever + offset(qlogis(Y.org)), data = new, family = "binomial"))
 }
 
-tmle <- function(data) {
-  otcr <- fit_otcr(data)
-  prop <- fit_prop(data)
+tmle <- function(data, parametric) {
+  otcr <- fit_otcr(data, parametric)
+  prop <- fit_prop(data, parametric)
   eps <- fit_tilt(otcr, prop)
   mean(plogis(qlogis(otcr$Y.on) + eps*prop$prob.on)) - 
     mean(plogis(qlogis(otcr$Y.off) + eps*prop$prob.off))

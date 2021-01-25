@@ -8,9 +8,8 @@
 #' @param rho Logistic distribution informative prior, default is 0.
 #' @param binary_cnf Number of binary confounders.
 #' @param cont_cnf Size of a continuous confounder.
-#' @param mu 
-#' @param sigma 
 #' @param randomized Simulate an randomized controlled trial (i.e., probability of treatment is 0.5)?
+#' @param parametric Estimate TMLE using just GLM? Only used with `context = "binary"`.
 #'
 #' @return A list of the true value, the result from parametric G-computation, 
 #'   and the result from TMLE.
@@ -18,114 +17,120 @@
 #' @author Nicholas Williams and Iván Díaz
 bias <- function(context = c("binary", "ordinal", "tte"), seed, n, 
                  reps, size, rho, binary_cnf, cont_cnf, 
-                 mu = NULL, sigma = NULL, randomized = FALSE) {
+                 randomized = FALSE, parametric = FALSE) {
   set.seed(seed)
-  data <- gendata(n, reps, size, rho, binary_cnf, 
-                  cont_cnf, mu, sigma, randomized)
+  data <- gendata(n, reps, size, rho, binary_cnf, cont_cnf, randomized, seed)
+  if (n == 1e5 && reps == 1) {
+    asymp <- data[[1]]
+  } else {
+    set.seed(seed)
+    asymp <- gendata(1e5, 1, size, rho, binary_cnf, cont_cnf, randomized, seed)[[1]]
+  }
+
   switch(match.arg(context), 
-         binary = bias_binary(data, cont_cnf), 
-         ordinal = bias_ordinal(data), 
+         binary = bias_binary(data, asymp, cont_cnf, parametric), 
+         ordinal = bias_ordinal(data, asymp, cont_cnf), 
          tte = bias_tte(data))
 }
 
-bias_binary <- function(data, cont_cnf) {
+bias_binary <- function(data, asymp, cont_cnf, parametric) {
+  list(truth = bias_binary_truth(asymp, cont_cnf), 
+       param = bias_binary_param(data),
+       tmle = bias_binary_tmle(data, parametric))
+}
+
+bias_binary_truth <- function(data, cont_cnf) {
+  cnf <- grep("^cnf", names(data), value = TRUE)
+  ncnf <- length(cnf) + 2
+  on <- copy(data)
+  off <- copy(data)
+  on[, trt := 1]
+  off[, trt := 0]
+  if (cont_cnf > 0) {
+    tform <- as.formula(paste0(paste(c("outcome~trt*(as.factor(cnf1)", cnf[-1]), collapse = "+"), ")^", ncnf))
+  } else {
+    tform <- as.formula(paste0("outcome~(.)^", ncnf))
+  }
+  tf <- suppressWarnings(speedglm::speedglm(tform, data = data))
+  mean(predict(tf, newdata = on) - predict(tf, newdata = off))
+}
+
+bias_binary_param <- function(data) {
   out <- lapply(data, function(d) {
-    cnf <- grep("^cnf", names(d), value = TRUE)
-    
-    on <- copy(d) # not factoring the continuous variable for now.
+    on <- copy(d)
     off <- copy(d)
     on[, trt := 1]
     off[, trt := 0]
-    
-    ncnf <- length(cnf) + 2
-    if (cont_cnf > 0) {
-      tform <- as.formula(paste0("outcome~trt*(as.factor(cnf1)+", 
-                                 paste(cnf, collapse = "+"), ")^", ncnf))
-    } else {
-      tform <- as.formula(paste0("outcome~(.)^", ncnf))
-    }
-    pform <- as.formula(paste0("outcome~trt*(", paste(cnf, collapse = "+"), ")"))
-    
-    tf <- lm(tform, d = d)
-    true <- mean(predict(tf, newd = on) - predict(tf, newd = off))
-    
-    pf <- glm(pform, family = "binomial", d = d)
-    param <- mean(predict(pf, newd = on, type = "response") - 
-                    predict(pf, newd = off, type = "response"))
-    
-    tml <- tmle(d)
-    list(truth = true, param = param, tmle = tml)
+    pf <- glm(outcome ~ trt*(.), data = d, family = "binomial")
+    mean(predict(pf, newdata = on, type = "response") - 
+           predict(pf, newdata = off, type = "response"))
   })
-  if (length(out) == 1) {
-    return(out[[1]])
-  }
-  out
+  unlist(out)
 }
 
-bias_ordinal <- function(data) {
+bias_binary_tmle <- function(data, parametric) {
+  out <- lapply(data, function(d) tmle(d, parametric = parametric))
+  unlist(out)
+}
+
+bias_ordinal <- function(data, asymp, cont_cnf) {
+  list(truth = bias_ordinal_truth(asymp, cont_cnf), 
+       param = bias_ordinal_param(data),
+       tmle = bias_ordinal_tmle(data))
+}
+
+bias_ordinal_truth <- function(data, cont_cnf) {
+  cnf <- grep("^cnf", names(data), value = TRUE)
+  ncnf <- length(cnf) + 2
+  on <- copy(data)
+  off <- copy(data)
+  on[, trt := 1]
+  off[, trt := 0]
+  data[, outcome := factor(outcome, ordered = TRUE)]
+  if (cont_cnf > 0) {
+    tform <- as.formula(paste0(paste(c("outcome~trt*(as.factor(cnf1)", cnf[-1]), collapse = "+"), ")^", ncnf))
+  } else {
+    tform <- as.formula(paste0("outcome~(.)^", ncnf))
+  }
+  tf1 <- ordinal::clm(tform, data = data[trt == 1, ])
+  tf0 <- ordinal::clm(tform, data = data[trt == 0, ])
+  on_pred <- predict(tf1, newdata = on[, -"outcome", with = FALSE], type = "prob")$fit
+  on_prob <- cumsum(colMeans(on_pred))[-ncol(on_pred)]
+  off_pred <- predict(tf0, newdata = off[, -"outcome", with = FALSE], type = 'prob')$fit
+  off_prob <- cumsum(colMeans(off_pred))[-ncol(off_pred)]
+  mean(qlogis(on_prob) - qlogis(off_prob))
+}
+
+bias_ordinal_param <- function(data) {
+  out <- lapply(data, function(d) {
+    on <- copy(d)
+    off <- copy(d)
+    on[, trt := 1]
+    off[, trt := 0]
+    d[, outcome := factor(outcome, ordered = TRUE)]
+    pf <- ordinal::clm(outcome ~ trt*(.), data = d)
+    on_pred <- predict(pf, newdata = on[, -"outcome", with = FALSE], type = "prob")$fit
+    on_prob <- cumsum(colMeans(on_pred))[-ncol(on_pred)]
+    off_pred <- predict(pf, newdata = off[, -"outcome", with = FALSE], type = "prob")$fit
+    off_prob <- cumsum(colMeans(off_pred))[-ncol(off_pred)]
+    mean(qlogis(on_prob) - qlogis(off_prob))
+  })
+  unlist(out)
+}
+
+bias_ordinal_tmle <- function(data) {
   out <- lapply(data, function(d) {
     Y <- d$outcome
     A <- d$trt
     cnf <- grep("^cnf", names(d), value = TRUE)
-    cols <- grep("[^trt]", names(d), value = TRUE)
     W <- as.data.frame(d[, cnf, with = FALSE])
-    
-    on <- copy(d) # not factoring the continuous variable for now.
-    off <- copy(d)
-    on[, trt := 1]
-    off[, trt := 0]
-    
-    ncnf <- length(cnf) + 2
-    tform <- as.formula(paste0("factor(outcome, ordered = TRUE)~(", paste(cnf, collapse = "+"), ")^", ncnf))
-    
-    # calculation of the truth
-    tf1 <- polr(tform, d = d[trt == 1, ]) # need to ask why we don't also stratify when calculating g-comp
-    tf0 <- polr(tform, d = d[trt == 0, ])
-    
-    on_pred <- predict(tf1, newd = on, type = 'prob')
-    on_prob <- cumsum(colMeans(on_pred))[-ncol(on_pred)]
-    
-    off_pred <- predict(tf0, newd = off, type = 'prob')
-    off_prob <- cumsum(colMeans(off_pred))[-ncol(off_pred)]
-    
-    true <- mean(qlogis(on_prob) - qlogis(off_prob))
-    
-    # parametric calculation
-    pf <- polr(factor(outcome, ordered = TRUE) ~ ., d = d)
-    
-    on_pred <- predict(pf, newd = on, type = 'prob')
-    on_prob <- cumsum(colMeans(on_pred))[-ncol(on_pred)]
-    
-    off_pred <- predict(pf, newd = off, type = 'prob')
-    off_prob <- cumsum(colMeans(off_pred))[-ncol(off_pred)]
-    
-    param <- mean(qlogis(on_prob) - qlogis(off_prob))
-    
-    # tmle calculation
-    tml <- drord(out = d$outcome, treat = d$trt,
-                 covar = d[, cnf, with = FALSE],
-                 treat_form = ".",
-                 out_form = ".",
-                 out_model = 'polr',
-                 ci = 'wald', 
-                 est_dist = FALSE)
-    
-    list(truth = true, param = param, tmle = tml$log_odds$est[3])
+    drord(out = d$outcome, treat = d$trt,
+          covar = d[, cnf, with = FALSE],
+          treat_form = ".",
+          out_form = ".",
+          out_model = "clm",
+          ci = 'wald', 
+          est_dist = FALSE)$log_odds$est[3]
   })
-  
-  if (length(out) == 1) {
-    return(out[[1]])
-  }
-  out
-}
-
-bias_tte <- function(data) {
-  out <- lapply(data, function(d) {
-    
-  })
-  
-  if (length(out) == 1) {
-    return(out[[1]])
-  }
-  out
+  unlist(out)
 }

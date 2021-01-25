@@ -9,6 +9,6 @@ echo "$SLURM_ARRAY_TASK_ID"
 
 source ~/.bashrc
 spack load -r /bxc56dm
-Rscript simulate.R ${1} ${2} ${3}
+Rscript simulate.R ${1} ${2} ${3} ${4} ${5} ${6}
 
 exit 0

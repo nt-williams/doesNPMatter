@@ -24,6 +24,7 @@ Depends:
     data.table,
     drord,
     SuperLearner,
-    future
+    future,
+    purrr
 Imports: 
     glm2

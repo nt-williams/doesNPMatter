@@ -13,9 +13,8 @@ bias(
   rho,
   binary_cnf,
   cont_cnf,
-  mu = NULL,
-  sigma = NULL,
-  randomized = FALSE
+  randomized = FALSE,
+  parametric = FALSE
 )
 }
 \arguments{
@@ -35,11 +34,9 @@ bias(
 
 \item{cont_cnf}{Size of a continuous confounder.}
 
-\item{mu}{}
-
-\item{sigma}{}
-
 \item{randomized}{Simulate an randomized controlled trial (i.e., probability of treatment is 0.5)?}
+
+\item{parametric}{Estimate TMLE using just GLM? Only used with \code{context = "binary"}.}
 }
 \value{
 A list of the true value, the result from parametric G-computation,

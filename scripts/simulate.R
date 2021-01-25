@@ -7,7 +7,10 @@
 args <- commandArgs(trailingOnly = TRUE)
 sim_config <- args[1]
 config_file <- paste0(args[2], ".yml")
-randomized <- as.logical(args[3])
+binary_cnf <- as.numeric(args[3])
+cont_cnf <- as.numeric(args[4])
+randomized <- as.logical(args[5])
+parametric <- as.logical(args[6])
 
 # library path for local R packages
 .libPaths("/home/niw4001/R_local")
@@ -34,14 +37,13 @@ task <- list(
   errfile = config$errfile,
   respath = config$respath,
   pkgs = config$pkgs, 
-  mu = NULL, 
-  sigma = NULL,
   ident = sim_config, 
   tasks = expand.grid(seeds = sample(109810836, config$m),
                       rho = 0, 
-                      binary_cnf = 4, 
-                      cont_cnf = 100, 
-                      randomized = randomized)
+                      binary_cnf = binary_cnf, 
+                      cont_cnf = cont_cnf, 
+                      randomized = randomized, 
+                      parametric = parametric)
 )
 
 plan(multisession)
