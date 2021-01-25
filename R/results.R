@@ -27,13 +27,15 @@ read_results <- function(folder, files, finite = FALSE) {
 result_cdf <- function(data, limits = NULL, file = NULL) {
   out <- 
     ggplot(data) +
-    geom_line(aes(x = abs(tmle_bias), y = 1 - ..y..), stat = 'ecdf', color = "blue") +
-    geom_line(aes(x = abs(param_bias ), y = 1 - ..y..), stat = 'ecdf', color = "red") + 
+    geom_line(aes(x = abs(tmle_bias), y = 1 - ..y..), stat = 'ecdf', 
+              color = "blue", alpha = 0.65) +
+    geom_line(aes(x = abs(param_bias ), y = 1 - ..y..), stat = 'ecdf', 
+              color = "red", alpha = 0.65) + 
     labs(x = expression(abs(Bias)), 
          y = expression(P(abs(Bias) > x))) + 
     scale_x_continuous(expand = c(0.025, 0), limits = limits) + 
     scale_y_continuous(expand = c(0.01, 0.01)) + 
-    theme_classic()
+    theme_classic(base_family = "Helvetica")
   
   if (!is.null(file)) {
     ggsave(here::here("plots", file), 
