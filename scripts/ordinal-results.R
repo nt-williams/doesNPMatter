@@ -21,31 +21,9 @@ res_ar4_0 <- read_results("ordinal", ar4_0)
 res_fr0_100 <- read_results("ordinal", fr0_100, TRUE)
 res_fr4_0 <- read_results("ordinal", fr4_0, TRUE)
 
-res_ar0_100[, `:=`(tmle_bias = tmle - truth, 
-                   param_bias = param - truth)]
+# absolute bias CDFs
+result_cdf(res_ar0_100, file = "ordinal_ar_0_100.png")
+result_cdf(res_ar4_0, file = "ordinal_ar_4_0.png")
 
-res_ar4_0[, `:=`(tmle_bias = tmle - truth, 
-                 param_bias = param - truth)]
-
-res_fr0_100[, `:=`(tmle_bias = tmle - truth, 
-                   param_bias = param - truth)]
-
-res_fr4_0[, `:=`(tmle_bias = tmle - truth, 
-                 param_bias = param - truth)]
-
-mean(res_ar0_100$tmle_bias)
-mean(res_ar0_100$param_bias)
-
-mean(res_ar4_0$tmle_bias)
-mean(res_ar4_0$param_bias)
-
-mean(res_fr0_100$tmle_bias)
-mean(res_fr0_100$param_bias)
-
-mean(res_fr4_0$tmle_bias)
-mean(res_fr4_0$param_bias)
-
-result_cdf(res_ar0_100)
-result_cdf(res_ar4_0)
-result_cdf(res_fr0_100)
-result_cdf(res_fr4_0)
+result_cdf(res_fr0_100, file = "ordinal_fr_0_100.png")
+result_cdf(res_fr4_0, file = "ordinal_fr_4_0.png")
