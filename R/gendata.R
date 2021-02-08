@@ -13,7 +13,7 @@
 #' 
 #' @author Nicholas Williams and Iván Díaz
 gendata <- function(n, reps, size = 2, rho = 0, binary_cnf, cont_cnf, 
-                    randomized = FALSE, seed) {
+                    randomized = FALSE, seed, tte = FALSE) {
   mixture <- rbinom(1, 1, rho)
   nip_y <- rdirichlet(1, rep(1, size^2))[1, ]
   
@@ -69,6 +69,17 @@ gendata <- function(n, reps, size = 2, rho = 0, binary_cnf, cont_cnf,
       outcome <- inform_prior(ip, trt, cnf, size)
     }
     
-    data.table(trt, cnf, outcome)
+    out <- data.table(trt, cnf, outcome)
+    if (!tte) {
+      return(out)
+    }
+    
+    out$outcome <- out$outcome + 1
+    cens <- sample.int(n, n*0.05)
+    time <- round(purrr::map_dbl(out[cens]$outcome, ~ runif(1, 0, .x - 1)))
+    out[cens, `:=`(status = TRUE, time = time)]
+    out[, `:=`(time = fcoalesce(time, outcome), 
+               status = fifelse(is.na(status), 1, 0))]
+    out[]
   }, simplify = FALSE)
 }
