@@ -167,7 +167,7 @@ bias_tte_truth <- function(data, cont_cnf) {
   } else {
     tform <- as.formula(paste(c("y~timeInt*trt", cnf), collapse = "*"))
   }
-  tf <- fastglm(model.matrix(tform, dl), dl$y, method = 2)
+  tf <- fastglm::fastglm(model.matrix(tform, dl), dl$y, method = 2)
   h1 <- predict(tf, model.matrix(tform, on))
   h0 <- predict(tf, model.matrix(tform, off))
   s1 <- tapply(1 - h1, id, cumprod, simplify = FALSE)
@@ -188,7 +188,7 @@ bias_tte_param <- function(data) {
     off <- copy(data[[i]])
     on[, trt := 1]
     off[, trt := 0]
-    pf <- coxph(form, data = data[[i]])
+    pf <- survival::coxph(form, data = data[[i]])
     out[[i]] <- mean(predict_coxph(pf, 14, on)) - mean(predict_coxph(pf, 14, off))
   } 
   unlist(out)

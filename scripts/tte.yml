@@ -1,0 +1,33 @@
+default:
+  context: "tte"
+  size: 20
+  
+finite1: 
+  nobs: 500
+  m: 1000
+  reps: 250
+  machines: 1000
+  progfile: !expr here::here("tte-finite-progress.txt")
+  errfile: !expr here::here("tte-finite-error.txt")
+  respath: !expr here::here("data", "res", "tte")
+  pkgs: !expr c("extraDistr", "data.table", "SuperLearner", "speedglm", "xgboost", "gam", "earth", "fastglm", "survival", "survtmle", "discSurv")
+  
+finite2: 
+  nobs: 2500
+  m: 1000
+  reps: 250
+  machines: 1000
+  progfile: !expr here::here("tte-finite-progress.txt")
+  errfile: !expr here::here("tte-finite-error.txt")
+  respath: !expr here::here("data", "res", "tte")
+  pkgs: !expr c("extraDistr", "data.table", "SuperLearner", "speedglm", "xgboost", "gam", "earth", "fastglm", "survival", "survtmle", "discSurv")
+  
+asymp:
+  nobs: 100000
+  m: 1000
+  reps: 1
+  machines: 1000
+  progfile: !expr here::here("tte-asymp-progress.txt")
+  errfile: !expr here::here("tte-asymp-error.txt")
+  respath: !expr here::here("data", "res", "tte")
+  pkgs: !expr c("extraDistr", "data.table", "SuperLearner", "speedglm", "xgboost", "gam", "earth", "fastglm", "survival", "survtmle", "discSurv")

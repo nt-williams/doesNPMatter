@@ -22,8 +22,11 @@ res_fr0_100 <- read_results("ordinal", fr0_100, TRUE)
 res_fr4_0 <- read_results("ordinal", fr4_0, TRUE)
 
 # absolute bias CDFs
-result_cdf(res_ar0_100, file = "ordinal_ar_0_100.png")
-result_cdf(res_ar4_0, file = "ordinal_ar_4_0.png")
+bias_cdf(res_ar0_100, file = "ordinal_ar_0_100")
+bias_cdf(res_ar4_0, file = "ordinal_ar_4_0")
+bias_cdf(res_fr0_100, file = "ordinal_fr_0_100")
+bias_cdf(res_fr4_0, file = "ordinal_fr_4_0") 
 
-result_cdf(res_fr0_100, file = "ordinal_fr_0_100.png")
-result_cdf(res_fr4_0, file = "ordinal_fr_4_0.png")
+# MSE CDFs
+mse_cdf(res_fr0_100, file = "ordinal_fr_0_100")
+mse_cdf(res_fr4_0, file = "ordinal_fr_4_0")

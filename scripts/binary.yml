@@ -7,8 +7,8 @@ finite1:
   m: 1000
   reps: 250
   machines: 1000
-  progfile: !expr here::here("binary-test-progress.txt")
-  errfile: !expr here::here("binary-test-error.txt")
+  progfile: !expr here::here("binary-finite-progress.txt")
+  errfile: !expr here::here("binary-finite-error.txt")
   respath: !expr here::here("data", "res", "binary")
   pkgs: !expr c("extraDistr", "data.table", "SuperLearner", "speedglm", "xgboost", "gam", "earth")
 
@@ -17,8 +17,8 @@ finite2:
   m: 1000
   reps: 250
   machines: 1000
-  progfile: !expr here::here("binary-test-progress.txt")
-  errfile: !expr here::here("binary-test-error.txt")
+  progfile: !expr here::here("binary-finite-progress.txt")
+  errfile: !expr here::here("binary-finite-error.txt")
   respath: !expr here::here("data", "res", "binary")
   pkgs: !expr c("extraDistr", "data.table", "SuperLearner", "speedglm", "xgboost", "gam", "earth")
   
@@ -27,7 +27,7 @@ asymp:
   m: 1000
   reps: 1
   machines: 1000
-  progfile: !expr here::here("binary-test-progress.txt")
-  errfile: !expr here::here("binary-test-error.txt")
+  progfile: !expr here::here("binary-asymp-progress.txt")
+  errfile: !expr here::here("binary-asymp-error.txt")
   respath: !expr here::here("data", "res", "binary")
   pkgs: !expr c("extraDistr", "data.table", "SuperLearner", "speedglm", "xgboost", "gam", "earth")

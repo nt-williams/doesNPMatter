@@ -30,6 +30,18 @@ res_f2o4_0 <- read_results("binary", f2o4_0, TRUE)
 res_fop0_100 <- read_results("binary", fop0_100, TRUE)
 res_fop4_0 <- read_results("binary", fop4_0, TRUE)
 
+res_fo0_100 <- 
+  merge(res_fo0_100, res_fop0_100[, .(id, 
+                                      tmlep_bias = tmle_bias, 
+                                      tmlep_mse = tmle_mse)], 
+        by = "id", all.x = TRUE, all.y = TRUE)
+
+res_fo4_0 <- 
+  merge(res_fo4_0, res_fop4_0[, .(id, 
+                                  tmlep_bias = tmle_bias, 
+                                  tmlep_mse = tmle_mse)], 
+        by = "id", all.x = TRUE, all.y = TRUE)
+
 # randomized
 ar0_100 <- find_files(binary, "asymp[[:digit:]]+_0_100_TRUETRUE.rds")
 ar4_0 <- find_files(binary, "asymp[[:digit:]]+_4_0_TRUETRUE.rds")
@@ -46,23 +58,26 @@ res_f2r0_100 <- read_results("binary", f2r0_100, TRUE)
 res_f2r4_0 <- read_results("binary", f2r4_0, TRUE)
 
 # absolute bias CDFs
-result_cdf(res_ao0_100, limits = c(0, 0.15), "binary_ao_0_100.png") # asymptotic, 0 binary, 100 continuous
-result_cdf(res_ao4_0, limits = c(0, 0.15), "binary_ao_4_0.png") # asymptotic, 4 binary, 0 continuous
+bias_cdf(res_ao0_100, limits = c(0, 0.15), "binary_ao_0_100")   # asymptotic, 0 binary, 100 continuous
+bias_cdf(res_ao4_0, limits = c(0, 0.15), "binary_ao_4_0")       # asymptotic, 4 binary, 0 continuous
+bias_cdf(res_fo0_100, limits = c(0, 0.25), "binary_fo_0_100")   # finite (n = 500), 0 binary, 100 continuous
+bias_cdf(res_fo4_0, limits = c(0, 0.25), "binary_fo_4_0")       # finite (n = 500), 4 binary, 0 continuous
+bias_cdf(res_f2o0_100, limits = c(0, 0.2), "binary_f2o_0_100")  # finite (n = 2500), 0 binary, 100 continuous
+bias_cdf(res_f2o4_0, limits = c(0, 0.2), "binary_f2o_4_0")      # finite (n = 2500), 4 binary, 0 continuous 
+bias_cdf(res_ar0_100, file = "binary_ar_0_100")                 # asymptotic, randomized, 0 binary, 100 continuous
+bias_cdf(res_ar4_0, file = "binary_ar_4_0")                     # asymptotic, randomized, 4 binary, 0 continuous
+bias_cdf(res_fr0_100, limit = c(0, 0.02), "binary_fr_0_100")    # finite (n = 500), randomized, 0 binary, 100 continuous
+bias_cdf(res_fr4_0, limit = c(0, 0.02), "binary_fr_4_0")        # finite (n = 500), randomized, 4 binary, 0 continuous
+bias_cdf(res_f2r0_100, limit = c(0, 0.02), "binary_f2r_0_100")  # finite (n = 2500), randomized, 0 binary, 100 continuous
+bias_cdf(res_f2r4_0, limit = c(0, 0.02), "binary_f2r_4_0")      # finite (n = 2500), randomized, 4 binary, 0 continuous
 
-result_cdf(res_fo0_100, limits = c(0, 0.25), "binary_fo_0_100.png") # finite (n = 500), 0 binary, 100 continuous
-result_cdf(res_fo4_0, limits = c(0, 0.25), "binary_fo_4_0.png") # finite (n = 500), 4 binary, 0 continuous
+# MSE CDFs
+mse_cdf(res_fo0_100, limits = c(0, 0.06), "binary_fo_0_100")     # finite (n = 500), 0 binary, 100 continuous
+mse_cdf(res_fo4_0, limits = c(0, 0.075), "binary_fo_4_0")        # finite (n = 500), 4 binary, 0 continuous
+mse_cdf(res_f2o0_100, limits = c(0, 0.0175), "binary_f2o_0_100") # finite (n = 2500), 0 binary, 100 continuous
+mse_cdf(res_f2o4_0, limits = c(0, 0.0175), "binary_f2o_4_0")     # finite (n = 2500), 4 binary, 0 continuous 
+mse_cdf(res_fr0_100, file = "binary_fr_0_100")                   # finite (n = 500), randomized, 0 binary, 100 continuous
+mse_cdf(res_fr4_0, file = "binary_fr_4_0")                       # finite (n = 500), randomized, 4 binary, 0 continuous
+mse_cdf(res_f2r0_100, file = "binary_f2r_0_100")                 # finite (n = 2500), randomized, 0 binary, 100 continuous
+mse_cdf(res_f2r4_0, file = "binary_f2r_4_0")                     # finite (n = 2500), randomized, 4 binary, 0 continuous
 
-result_cdf(res_fop0_100, limits = c(0, 0.15), "binary_fop_0_100.png") # finite (n = 500), 0 binary, 100 continuous, TMLE using only GLM
-result_cdf(res_fop4_0, limits = c(0, 0.175), "binary_fop_4_0.png") # finite (n = 500), 4 binary, 0 continuous, TMLE using only GLM
-
-result_cdf(res_f2o0_100, limits = c(0, 0.2), "binary_f2o_0_100.png") # finite (n = 2500), 0 binary, 100 continuous
-result_cdf(res_f2o4_0, limits = c(0, 0.2), "binary_f2o_4_0.png") # finite (n = 2500), 4 binary, 0 continuous 
-
-result_cdf(res_ar0_100, file = "binary_ar_0_100.png") # asymptotic, randomized, 0 binary, 100 continuous
-result_cdf(res_ar4_0, file = "binary_ar_4_0.png") # asymptotic, randomized, 4 binary, 0 continuous
-
-result_cdf(res_fr0_100, limit = c(0, 0.02), "binary_fr_0_100.png") # finite (n = 500), randomized, 0 binary, 100 continuous
-result_cdf(res_fr4_0, limit = c(0, 0.02), "binary_fr_4_0.png") # finite (n = 500), randomized, 4 binary, 0 continuous
-
-result_cdf(res_f2r0_100, limit = c(0, 0.02), "binary_f2r_0_100.png") # finite (n = 2500), randomized, 0 binary, 100 continuous
-result_cdf(res_f2r4_0, limit = c(0, 0.02), "binary_f2r_4_0.png") # finite (n = 2500), randomized, 4 binary, 0 continuous
