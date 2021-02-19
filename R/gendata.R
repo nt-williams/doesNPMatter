@@ -47,10 +47,10 @@ gendata <- function(n, reps, size = 2, binary_cnf, cont_cnf,
   }
   
   vnorm <- {
-    if (cont_cnf == 0) 
-      NULL 
-    else
+    if (cont_cnf == 0)
       NULL
+    else
+      variation_norm(nip, size, binary_cnf, cont_cnf)
   }
 
   out <- replicate(reps, {
@@ -76,7 +76,7 @@ gendata <- function(n, reps, size = 2, binary_cnf, cont_cnf,
     outcome <- trt * y1 + (1 - trt) * y0
     out <- data.table(trt, cnf, outcome)
     if (!tte) {
-      return(out)
+      return(out[])
     }
     
     out$outcome <- out$outcome + 1
@@ -87,5 +87,5 @@ gendata <- function(n, reps, size = 2, binary_cnf, cont_cnf,
                status = fifelse(is.na(status), 1, 0))]
     out[]
   }, simplify = FALSE)
-  list(data = out, truth = truth, vnorm = NULL)
+  list(data = out, truth = truth, vnorm = vnorm)
 }

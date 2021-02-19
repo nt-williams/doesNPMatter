@@ -29,6 +29,7 @@ bias <- function(context = c("binary", "ordinal", "tte"), seed, n,
 
 bias_binary <- function(data, parametric) {
   list(truth = data$truth, 
+       vnorm = data$vnorm, 
        param = bias_binary_param(data$data),
        tmle = bias_binary_tmle(data$data, parametric))
 }
@@ -53,6 +54,7 @@ bias_binary_tmle <- function(data, parametric) {
 
 bias_ordinal <- function(data) {
   list(truth = data$truth, 
+       vnorm = data$vnorm,
        param = bias_ordinal_param(data$data),
        tmle = bias_ordinal_tmle(data$data))
 }
@@ -93,6 +95,7 @@ bias_ordinal_tmle <- function(data) {
 
 bias_tte <- function(data, randomized) {
   list(truth = data$truth, 
+       vnorm = data$vnorm,
        param = bias_tte_param(data$data),
        tmle = bias_tte_tmle(data$data, randomized))
 }
