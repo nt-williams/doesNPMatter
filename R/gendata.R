@@ -12,11 +12,9 @@
 #' @return A `data.table` of the simulated data.
 #' 
 #' @author Nicholas Williams and Iván Díaz
-gendata <- function(n, reps, size = 2, rho = 0, binary_cnf, cont_cnf, 
+gendata <- function(n, reps, size = 2, binary_cnf, cont_cnf, 
                     randomized = FALSE, seed, tte = FALSE) {
-  mixture <- rbinom(1, 1, rho)
   nip_y <- rdirichlet(1, rep(1, size^2))[1, ]
-  
   cont_cnf <- ifelse(cont_cnf == 0, 1, cont_cnf)
   
   if (!randomized) {
@@ -39,16 +37,28 @@ gendata <- function(n, reps, size = 2, rho = 0, binary_cnf, cont_cnf,
     }
   }
   
-  if (mixture == 1) {
-    ip <- gen_inform_prior(size, binary_cnf + ifelse(cont_cnf == 1, 0, 1), seed)
+  truth <- {
+    if (tte == TRUE)
+      truth_tte(nip_y, 12, size)
+    else if (size == 2)
+      truth_binary(nip_y)
+    else if (size > 2)
+      truth_ordinal(nip_y, size)
+  }
+  
+  vnorm <- {
+    if (cont_cnf == 0) 
+      NULL 
+    else
+      NULL
   }
 
-  replicate(reps, {
+  out <- replicate(reps, {
     meta <- rcat(n, prob = nip)
     y0  <- alt_01(meta, cont_cnf * size * 2^(binary_cnf + 1), size)
     y1  <- alt_01(meta, cont_cnf * 2^(binary_cnf + 1), size)
     trt <- alt_01(meta, cont_cnf * 2^binary_cnf)
-    
+
     cnf <- cbind(mod_op(meta, cont_cnf))
     if (binary_cnf > 0) {
       cnf_cat <- mod_op(meta, cont_cnf * 2^binary_cnf)
@@ -63,12 +73,7 @@ gendata <- function(n, reps, size = 2, rho = 0, binary_cnf, cont_cnf,
       colnames(cnf) <- "cnf1"
     }
     
-    if (mixture == 0) {
-      outcome <- trt * y1 + (1 - trt) * y0
-    } else if (mixture == 1) {
-      outcome <- inform_prior(ip, trt, cnf, size)
-    }
-    
+    outcome <- trt * y1 + (1 - trt) * y0
     out <- data.table(trt, cnf, outcome)
     if (!tte) {
       return(out)
@@ -82,4 +87,5 @@ gendata <- function(n, reps, size = 2, rho = 0, binary_cnf, cont_cnf,
                status = fifelse(is.na(status), 1, 0))]
     out[]
   }, simplify = FALSE)
+  list(data = out, truth = truth, vnorm = NULL)
 }

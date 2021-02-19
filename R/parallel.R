@@ -17,7 +17,7 @@ partition <- function(task) {
     out[[i]] <- future({
       try(
         bias(task$context, task$tasks$seeds[row], task$n, 
-             task$reps, task$size, task$tasks$rho[row], 
+             task$reps, task$size,
              task$tasks$binary_cnf[i], task$tasks$cont_cnf[row], 
              randomized = task$tasks$randomized[row], 
              parametric = task$tasks$parametric[row])

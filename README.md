@@ -1,6 +1,6 @@
 # "Does Nonparametric Matter?" Simulations
 
-Nicholas Williams, Iván Díaz, Kara Rudolph
+Nicholas Williams, Iván Díaz, Kara Rudolph, Caleb Miles
 
 ------------------------------------------------------------------------
 

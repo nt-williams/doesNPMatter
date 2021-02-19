@@ -39,7 +39,6 @@ task <- list(
   pkgs = config$pkgs, 
   ident = sim_config, 
   tasks = expand.grid(seeds = sample(109810836, config$m),
-                      rho = 0, 
                       binary_cnf = binary_cnf, 
                       cont_cnf = cont_cnf, 
                       randomized = randomized, 

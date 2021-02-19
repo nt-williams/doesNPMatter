@@ -1,34 +1,35 @@
 default:
   context: "ordinal"
   size: 8
-  
-finite1: 
-  nobs: 500
-  m: 1000
-  reps: 250
-  machines: 1000
-  progfile: !expr here::here("ordinal-finite-progress.txt")
-  errfile: !expr here::here("ordinal-finite-error.txt")
+  machines: 5000
   respath: !expr here::here("data", "res", "ordinal")
   pkgs: !expr c("ordinal", "extraDistr", "data.table", "drord")
+  
+finite3: 
+  nobs: 500
+  m: 5000
+  reps: 250
+  progfile: !expr here::here("ordinal-finite3-progress.txt")
+  errfile: !expr here::here("ordinal-finite3-error.txt")
   
 finite2: 
-  nobs: 2500
-  m: 1000
+  nobs: 500
+  m: 5000
   reps: 250
-  machines: 1000
-  progfile: !expr here::here("ordinal-finite-progress.txt")
-  errfile: !expr here::here("ordinal-finite-error.txt")
-  respath: !expr here::here("data", "res", "ordinal")
-  pkgs: !expr c("ordinal", "extraDistr", "data.table", "drord")
+  progfile: !expr here::here("ordinal-finite2-progress.txt")
+  errfile: !expr here::here("ordinal-finite2-error.txt")
+  
+finite1: 
+  nobs: 2500
+  m: 5000
+  reps: 250
+  progfile: !expr here::here("ordinal-finite1-progress.txt")
+  errfile: !expr here::here("ordinal-finite1-error.txt")
   
 asymp:
   nobs: 100000
-  m: 1000
+  m: 5000
   reps: 1
-  machines: 1000
   progfile: !expr here::here("ordinal-asymp-progress.txt")
   errfile: !expr here::here("ordinal-asymp-error.txt")
-  respath: !expr here::here("data", "res", "ordinal")
-  pkgs: !expr c("ordinal", "extraDistr", "data.table", "drord")
 
