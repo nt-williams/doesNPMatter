@@ -14,6 +14,7 @@
 #' @author Nicholas Williams and Iván Díaz
 gendata <- function(n, reps, size = 2, binary_cnf, cont_cnf, 
                     randomized = FALSE, seed, tte = FALSE) {
+  set.seed(seed)
   nip_y <- rdirichlet(1, rep(1, size^2))[1, ]
   cont_cnf <- ifelse(cont_cnf == 0, 1, cont_cnf)
   

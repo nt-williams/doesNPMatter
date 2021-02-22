@@ -17,10 +17,10 @@
 bias <- function(context = c("binary", "ordinal", "tte"), seed, n, 
                  reps, size, binary_cnf, cont_cnf, 
                  randomized = FALSE, parametric = FALSE) {
-  set.seed(seed)
   data <- gendata(n, reps, if (match.arg(context) == "binary") 2 else size, 
                   binary_cnf, cont_cnf, randomized, seed, 
                   tte = if (match.arg(context) == "tte") TRUE else FALSE)
+  browser()
   switch(match.arg(context), 
          binary = bias_binary(data, parametric), 
          ordinal = bias_ordinal(data), 
@@ -30,8 +30,8 @@ bias <- function(context = c("binary", "ordinal", "tte"), seed, n,
 bias_binary <- function(data, parametric) {
   list(truth = data$truth, 
        vnorm = data$vnorm, 
-       param = bias_binary_param(data$data),
-       tmle = bias_binary_tmle(data$data, parametric))
+       param = bias_binary_param(data$data))#,
+       #tmle = bias_binary_tmle(data$data, parametric))
 }
 
 bias_binary_param <- function(data) {
@@ -48,7 +48,14 @@ bias_binary_param <- function(data) {
 }
 
 bias_binary_tmle <- function(data, parametric) {
-  out <- lapply(data, function(d) tmle(d, parametric = parametric))
+  out <- lapply(data, function(d) {
+    lmtp_tmle(as.data.frame(d), "trt", "outcome", grep("^cnf", names(d), value = TRUE), 
+              outcome_type = "binomial", 
+              shift = static_binary_on, folds = 2, .SL_folds = 2,
+              learners_outcome = make_learner_stack(Lrnr_glm_fast, Lrnr_ranger), 
+              learners_trt = make_learner_stack(Lrnr_glm_fast, Lrnr_ranger))$theta
+  })
+  # out <- lapply(data, function(d) tmle(d, parametric = parametric))
   unlist(out)
 }
 

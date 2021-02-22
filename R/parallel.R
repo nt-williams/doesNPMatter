@@ -28,7 +28,8 @@ partition <- function(task) {
       cat("error in task ", row, "\n", file = task$errfile, append = TRUE)
     }
     saveRDS(append(list(id = row), append(unlist(value(out[[i]])), task$tasks[row, ])), 
-            file.path(task$respath, paste0(task$ident, row, "_", 
+            file.path(task$respath, paste0(task$ident, "_", 
+                                           row, "_", 
                                            task$tasks$binary_cnf[row], "_", 
                                            task$tasks$cont_cnf[row], "_", 
                                            task$tasks$randomized[row], 
