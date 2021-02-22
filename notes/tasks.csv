@@ -3,10 +3,10 @@ binary,,1.00E+05,RCT,,4,0,sbatch simulate.sh asymp binary 4 0 TRUE TRUE,1
 binary,,2500,RCT,,4,0,sbatch simulate.sh finite1 binary 4 0 TRUE TRUE,1
 binary,,500,RCT,,4,0,sbatch simulate.sh finite2 binary 4 0 TRUE TRUE,1
 binary,,250,RCT,,4,0,sbatch simulate.sh finite3 binary 4 0 TRUE TRUE,1
-binary,,1.00E+05,RCT,,0,100,sbatch simulate.sh asymp binary 0 100 TRUE TRUE,
-binary,,2500,RCT,,0,100,sbatch simulate.sh finite1 binary 0 100 TRUE TRUE,
-binary,,500,RCT,,0,100,sbatch simulate.sh finite2 binary 0 100 TRUE TRUE,
-binary,,250,RCT,,0,100,sbatch simulate.sh finite3 binary 0 100 TRUE TRUE,
+binary,,1.00E+05,RCT,,0,100,sbatch simulate.sh asymp binary 0 100 TRUE TRUE,1
+binary,,2500,RCT,,0,100,sbatch simulate.sh finite1 binary 0 100 TRUE TRUE,1
+binary,,500,RCT,,0,100,sbatch simulate.sh finite2 binary 0 100 TRUE TRUE,1
+binary,,250,RCT,,0,100,sbatch simulate.sh finite3 binary 0 100 TRUE TRUE,1
 binary,,1.00E+05,obs.,No,4,0,sbatch simulate.sh asymp binary 4 0 FALSE FALSE,1
 binary,,2500,obs.,No,4,0,sbatch simulate.sh finite1 binary 4 0 FALSE FALSE,1
 binary,,500,obs.,No,4,0,sbatch simulate.sh finite2 binary 4 0 FALSE FALSE,1
