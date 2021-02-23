@@ -38,10 +38,17 @@ variation_norm <- function(nip, size, binary_cnf, cont_cnf) {
   y0  <- alt_01(meta, cont_cnf * size * 2^(binary_cnf + 1), size)
   y1  <- alt_01(meta, cont_cnf * 2^(binary_cnf + 1), size)
   trt <- alt_01(meta, cont_cnf * 2^binary_cnf)
-  cnf <- cbind(mod_op(meta, cont_cnf))
+  cnf <- cbind(mod_op(meta, cont_cnf)) # need to make sure this is exactly the same as in the DGM function
   proby1 <- sapply(1:cont_cnf, function(x) sum(nip[y1 == 1 & cnf[, 1] == x]) / sum(nip[cnf[, 1] == x]))
   proby0 <- sapply(1:cont_cnf, function(x) sum(nip[y0 == 1 & cnf[, 1] == x]) / sum(nip[cnf[, 1] == x]))
+  #P(A=1|W)
+  probA1 <- sapply(1:cont_cnf, function(x) sum(nip[trt == 1 & cnf[, 1] == x]) / sum(nip[cnf[, 1] == x]))
+  probW <- sapply(1:cont_cnf, function(x) sum(nip[cnf[, 1] == x]))
+  p1 <- max(probW / probA1)
+  p0 <- max(probW / (1 - probA1))
+  ind_positivity <- max(p1, p0) # if this is large then we have positivity violations
   vn1 <- mean(abs(diff(proby1)))
   vn0 <- mean(abs(diff(proby0)))
-  list(vn1 = vn1, vn0 = vn0)
+  # really a scaled variation norm
+  list(vn1 = vn1, vn0 = vn0, vn_cate = mean(abs(diff(proby1 - proby0))), pos = ind_positivity)
 }
