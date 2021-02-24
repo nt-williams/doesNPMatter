@@ -17,23 +17,28 @@
 bias <- function(context = c("binary", "ordinal", "tte"), seed, n, 
                  reps, size, binary_cnf, cont_cnf, 
                  randomized = FALSE, parametric = FALSE) {
-  data <- gendata(n, reps, if (match.arg(context) == "binary") 2 else size, 
-                  binary_cnf, cont_cnf, randomized, seed, 
-                  tte = if (match.arg(context) == "tte") TRUE else FALSE)
-  switch(match.arg(context), 
-         binary = bias_binary(data, parametric), 
-         ordinal = bias_ordinal(data), 
-         tte = bias_tte(data, randomized))
+  dist <- create_dist(binary_cnf, cont_cnf, if (match.arg(context) == "binary") 2 else size, randomized, seed)
+  data <- gendata(dist, n, reps, if (match.arg(context) == "tte") TRUE else FALSE)
+  truth <- 
+    switch(match.arg(context), 
+           binary = truth_binary(dist), 
+           ordinal = truth_ordinal(dist), 
+           tte = truth_tte(dist))
+  estims <- 
+    switch(match.arg(context), 
+           binary = binary(data, parametric || randomized), 
+           ordinal = ordinal(data), 
+           tte = bias_tte(data, randomized))
+  c(list(dist = dist, truth = truth), estims)
 }
 
-bias_binary <- function(data, parametric) {
-  list(truth = data$truth, 
-       vnorm = data$vnorm, 
-       param = bias_binary_param(data$data),
-       tmle = bias_binary_tmle(data$data, parametric))
+binary <- function(data, parametric) {
+  list(vnorm = NULL, 
+       param = binary_param(data),
+       tmle = binary_tmle(data, parametric))
 }
 
-bias_binary_param <- function(data) {
+binary_param <- function(data) {
   out <- lapply(data, function(d) {
     on <- copy(d)
     off <- copy(d)
@@ -46,19 +51,18 @@ bias_binary_param <- function(data) {
   unlist(out)
 }
 
-bias_binary_tmle <- function(data, parametric) {
+binary_tmle <- function(data, parametric) {
   out <- lapply(data, function(d) tmle(d, parametric = parametric))
   unlist(out)
 }
 
-bias_ordinal <- function(data) {
-  list(truth = data$truth, 
-       vnorm = data$vnorm,
-       param = bias_ordinal_param(data$data),
-       tmle = bias_ordinal_tmle(data$data))
+ordinal <- function(data) {
+  list(vnorm = NULL,
+       param = ordinal_param(data),
+       tmle = ordinal_tmle(data))
 }
 
-bias_ordinal_param <- function(data) {
+ordinal_param <- function(data) {
   out <- lapply(data, function(d) {
     on <- copy(d)
     off <- copy(d)
@@ -75,7 +79,7 @@ bias_ordinal_param <- function(data) {
   unlist(out)
 }
 
-bias_ordinal_tmle <- function(data) {
+ordinal_tmle <- function(data) {
   out <- lapply(data, function(d) {
     Y <- d$outcome
     A <- d$trt
@@ -92,30 +96,28 @@ bias_ordinal_tmle <- function(data) {
   unlist(out)
 }
 
-bias_tte <- function(data, randomized) {
-  list(truth = data$truth, 
-       vnorm = data$vnorm,
-       param = bias_tte_param(data$data),
-       tmle = bias_tte_tmle(data$data, randomized))
+tte <- function(data, randomized) {
+  list(vnorm = NULL,
+       param = tte_param(data),
+       tmle = tte_tmle(data, randomized))
 }
 
-bias_tte_param <- function(data) {
-  require("survival")
-  cnf <- grep("^cnf", names(data[[1]]), value = TRUE)
-  form <- as.formula(paste0("Surv(time, status) ~ trt*(", paste(cnf, collapse = "+"), ")"))
+tte_param <- function(data) {
   out <- list()
   for (i in 1:length(data)) {
-    on <- copy(data[[i]])
-    off <- copy(data[[i]])
+    use <- copy(data[[i]])
+    use[, outcome := NULL]
+    on <- copy(use)
+    off <- copy(use)
     on[, trt := 1]
     off[, trt := 0]
-    pf <- survival::coxph(form, data = data[[i]])
+    pf <- survival::coxph(survival::Surv(time, status) ~ trt*(.), data = use)
     out[[i]] <- mean(predict_coxph(pf, 12, on)) - mean(predict_coxph(pf, 12, off))
   } 
   unlist(out)
 }
 
-bias_tte_tmle <- function(data, randomized) {
+tte_tmle <- function(data, randomized) {
   lrnrs <- {
     if (randomized)
       "SL.glm.interaction"
