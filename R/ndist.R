@@ -106,21 +106,25 @@ truth_tte <- function(dist, tau) {
   return((S1 - S0)[tau])
 }
 
-variation_norm <- function(dist) {
-  cont_cnf <- dist$cnf1
-  probs <- dist[, .(prob_y1 = weighted.mean(y1, prob), 
-                    prob_y0 = weighted.mean(y0, prob), 
-                    prob_trt = weighted.mean(trt, prob), 
-                    prob_w = sum(prob)), cnf1][order(cnf1)]
-
+positivity <- function(dist) {
+  cnf <- grep("^cnf", names(dist), value = TRUE)
+  probs <- dist[, .(prob_trt = weighted.mean(trt, prob), 
+                    prob_w = sum(prob)), cnf]
+  data.table::setorderv(probs, cnf)
   prob_a <- with(probs, weighted.mean(prob_trt, prob_w))
   p1 <- probs[, max(prob_a / prob_trt)]
   p0 <- probs[, max((1 - prob_a) / (1 - prob_trt))]
-  ind_positivity <- max(p1, p0)
+  max(p1, p0)
+}
+
+variation_norm <- function(dist) {
+  cont_cnf <- dist$cnf1
+  probs <- dist[, .(prob_y1 = weighted.mean(y1, prob), 
+                    prob_y0 = weighted.mean(y0, prob)), cnf1][order(cnf1)]
   vn1 <- mean(abs(diff(probs$prob_y1)))
   vn0 <- mean(abs(diff(probs$prob_y0)))
   vn_cate <-  mean(abs(diff(probs$prob_y1 - probs$prob_y0)))
-  list(vn1 = vn1, vn0 = vn0, vn_cate = vn_cate, pos = ind_positivity)
+  list(vn1 = vn1, vn0 = vn0, vn_cate = vn_cate)
 }
 
 alt_01 <- function(meta, x, cats = 2) {

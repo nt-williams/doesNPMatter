@@ -1,38 +1,29 @@
-respath <- here::here("data", "res")
-
-read_finite <- function(file) {
-  data <- readRDS(file)
-  params <- names(data)
-  tmle_vals <- unlist(data[params[grepl("^tmle", params)]])
-  if (!is.null(tmle_vals)) {
-    tmle_vals <- tmle_vals[tmle_vals != Inf & tmle_vals != -Inf]
-    param_vals <- unlist(data[params[grepl("^param", params)]])
-    data[["tmle"]] <- mean(tmle_vals)
-    data[["tmle_mse"]] <- mse(tmle_vals, data$truth)
-    data[["param"]] <- mean(param_vals)
-    data[["param_mse"]] <- mse(param_vals, data$truth)
-    data[params[grepl("*[[:digit:]]+", params)]] <- NULL
-    return(data)
-  }
+read_results <- function(context, regex) {
+  files <- find_files(context, regex)
+  out <- purrr::map_dfr(files, function(file) {
+    x <- readRDS(file)
+    if (length(x$param) > 1) {
+      x$tmle_mse <- mse(x$tmle, x$truth)
+      x$param_mse <- mse(x$param, x$truth)
+      x$param <- mean(x$param, na.rm = TRUE)
+      x$tmle <- mean(x$tmle, na.rm = TRUE)
+    }
+    data.table(truth = x$truth, pos = x$pos, 
+               vn1 = x$vn1, vn0 = x$vn0, vn_cate = x$vn_cate,
+               param = x$param, tmle = x$tmle, 
+               tmle_mse = x$tmle_mse, param_mse = x$param_mse)
+  })
+  setDT(out)
+  out[, `:=`(tmle_bias = tmle - truth, 
+             param_bias = param - truth)][]
 }
 
 mse <- function(x_i, x_bar) {
   mean((x_i - x_bar)^2)
 }
 
-read_results <- function(folder, files, finite = FALSE) {
-  if (finite) {
-    out <- map_dfr(file.path(respath, folder, files), ~ as.data.frame(read_finite(.x)))
-  } else {
-    out <- map_dfr(file.path(respath, folder, files), ~ as.data.frame(readRDS(.x)))
-  }
-  setDT(out)
-  out[, `:=`(tmle_bias = tmle - truth, 
-             param_bias = param - truth)][]
-}
-
-find_files <- function(files, regex) {
-  files[grepl(regex, files)]
+find_files <- function(context, regex) {
+  fs::dir_ls(here::here("data", "res", context), regex = regex)
 }
 
 bias_cdf <- function(data, limits = NULL, file = NULL) {

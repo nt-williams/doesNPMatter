@@ -25,7 +25,7 @@ bias <- function(context = c("binary", "ordinal", "tte"), seed, n,
            ordinal = truth_ordinal(dist), 
            tte = truth_tte(dist))
   vnorm <- {
-    if (cont_cnf > 0 | match.arg(context) == "binary")
+    if (cont_cnf > 0 && match.arg(context) == "binary")
       variation_norm(dist)
     else 
       NULL
@@ -35,7 +35,7 @@ bias <- function(context = c("binary", "ordinal", "tte"), seed, n,
            binary = binary(data, parametric || randomized), 
            ordinal = ordinal(data), 
            tte = bias_tte(data, randomized))
-  c(list(dist = dist, truth = truth), vnorm, estims)
+  c(list(dist = dist, pos = positivity(dist), truth = truth), vnorm, estims)
 }
 
 binary <- function(data, parametric) {
