@@ -24,17 +24,22 @@ bias <- function(context = c("binary", "ordinal", "tte"), seed, n,
            binary = truth_binary(dist), 
            ordinal = truth_ordinal(dist), 
            tte = truth_tte(dist))
+  vnorm <- {
+    if (cont_cnf > 0 | match.arg(context) == "binary")
+      variation_norm(dist)
+    else 
+      NULL
+  }
   estims <- 
     switch(match.arg(context), 
            binary = binary(data, parametric || randomized), 
            ordinal = ordinal(data), 
            tte = bias_tte(data, randomized))
-  c(list(dist = dist, truth = truth), estims)
+  c(list(dist = dist, truth = truth), vnorm, estims)
 }
 
 binary <- function(data, parametric) {
-  list(vnorm = NULL, 
-       param = binary_param(data),
+  list(param = binary_param(data),
        tmle = binary_tmle(data, parametric))
 }
 
@@ -57,8 +62,7 @@ binary_tmle <- function(data, parametric) {
 }
 
 ordinal <- function(data) {
-  list(vnorm = NULL,
-       param = ordinal_param(data),
+  list(param = ordinal_param(data),
        tmle = ordinal_tmle(data))
 }
 
@@ -97,8 +101,7 @@ ordinal_tmle <- function(data) {
 }
 
 tte <- function(data, randomized) {
-  list(vnorm = NULL,
-       param = tte_param(data),
+  list(param = tte_param(data),
        tmle = tte_tmle(data, randomized))
 }
 
