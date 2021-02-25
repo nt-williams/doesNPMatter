@@ -10,7 +10,6 @@ bias(
   n,
   reps,
   size,
-  rho,
   binary_cnf,
   cont_cnf,
   randomized = FALSE,
@@ -26,9 +25,7 @@ bias(
 
 \item{reps}{How many datasets should be generated from the DGM.}
 
-\item{size}{Number of categories in Y, default is 2.}
-
-\item{rho}{Logistic distribution informative prior, default is 0.}
+\item{size}{Number of categories in Y, ignored if context is "binary".}
 
 \item{binary_cnf}{Number of binary confounders.}
 
