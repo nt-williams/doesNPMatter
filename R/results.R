@@ -2,6 +2,9 @@ read_results <- function(context, regex) {
   files <- find_files(context, regex)
   out <- purrr::map_dfr(files, function(file) {
     x <- readRDS(file)
+    if (inherits(x, "try-error")) {
+      return(NULL)
+    }
     if (length(x$param) > 1) {
       x$tmle_mse <- mse(x$tmle, x$truth)
       x$param_mse <- mse(x$param, x$truth)
@@ -23,7 +26,7 @@ mse <- function(x_i, x_bar) {
 }
 
 find_files <- function(context, regex) {
-  fs::dir_ls(here::here("data", "res", context), regex = regex)
+  here::here("data", "res", context, grep(regex, list.files(here::here("data", "res", context)), value = TRUE))
 }
 
 bias_cdf <- function(data, limits = NULL, file = NULL) {
@@ -60,7 +63,7 @@ bias_cdf <- function(data, limits = NULL, file = NULL) {
     ggsave(here::here("plots", paste0("bias_", file, ".png")), 
            plot = out,
            dpi = 600, 
-           width = 4, 
+           width = 6, 
            height = 3)
     saveRDS(out, here::here("plots", paste0("bias_", file, ".rds")))
   }
@@ -101,7 +104,7 @@ mse_cdf <- function(data, limits = NULL, file = NULL) {
     ggsave(here::here("plots", paste0("mse_", file, ".png")), 
            plot = out,
            dpi = 600, 
-           width = 4, 
+           width = 6, 
            height = 3)
     saveRDS(out, here::here("plots", paste0("mse_", file, ".rds")))
   }

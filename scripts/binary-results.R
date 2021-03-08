@@ -9,6 +9,48 @@ library(ggplot2)
 
 devtools::load_all()
 
+ao4_0 <- read_results("binary", "asymp_[[:digit:]]+_4_0_FALSEFALSE*")
+f1o4_0 <- read_results("binary", "finite1_[[:digit:]]+_4_0_FALSEFALSE*")
+f2o4_0 <- read_results("binary", "finite2_[[:digit:]]+_4_0_FALSEFALSE*")
+f3o4_0 <- read_results("binary", "finite3_[[:digit:]]+_4_0_FALSEFALSE*")
+
+ao0_100 <- read_results("binary", "asymp_[[:digit:]]+_0_100_FALSEFALSE*")
+f1o0_100 <- read_results("binary", "finite1_[[:digit:]]+_0_100_FALSEFALSE*")
+f2o4_0 <- read_results("binary", "finite2_[[:digit:]]+_4_0_FALSEFALSE*")
+f3o4_0 <- read_results("binary", "finite3_[[:digit:]]+_4_0_FALSEFALSE*")
+
+
+
+
+
+ar4_0 <- read_results("binary", "asymp_[[:digit:]]+_4_0_TRUETRUE.rds")
+f1r4_0 <- read_results("binary", "finite1_[[:digit:]]+_4_0_TRUETRUE.rds")
+f2r4_0 <- find_files(binary, "finite2_[[:digit:]]+_4_0_TRUETRUE.rds")
+
+bias_cdf(ao4_0, limits = c(0, 0.25))
+
+
+
+
+
+
+
+
+
+
+
+mkdi
+
+
+
+
+
+
+
+
+
+
+
 binary <- list.files(file.path(respath, "binary"))
 
 # observational 
