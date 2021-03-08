@@ -1,6 +1,6 @@
 read_results <- function(context, regex) {
   files <- find_files(context, regex)
-  out <- purrr::map_dfr(files, function(file) {
+  out <- purrr::map(files, function(file) {
     x <- readRDS(file)
     if (length(x$param) > 1) {
       x$tmle_mse <- mse(x$tmle, x$truth)

@@ -12,10 +12,10 @@ devtools::load_all()
 binary <- list.files(file.path(respath, "binary"))
 
 # observational 
-ao0_100 <- find_files(binary, "asymp[[:digit:]]+_0_100_FALSE.rds")
-ao4_0 <- find_files(binary, "asymp[[:digit:]]+_4_0_FALSE.rds")
+ao0_100 <- find_files(binary, "asymp[[:digit:]]+_0_100_FALSEFALSE.rds")
+ao4_0 <- find_files(binary, "asymp[[:digit:]]+_4_0_FALSEFALSE.rds")
 fo0_100 <- find_files(binary, "finite[[:digit:]]+_0_100_FALSE.rds")
-fo4_0 <- find_files(binary, "finite[[:digit:]]+_4_0_FALSE.rds")
+fo1_4_0 <- find_files(binary, "finite1[1-5000]+_4_0_FALSEFALSE.rds")
 f2o0_100 <- find_files(binary, "finite2[[:digit:]]+_0_100_FALSEFALSE.rds")
 f2o4_0 <- find_files(binary, "finite2[[:digit:]]+_4_0_FALSEFALSE.rds")
 fop0_100 <- find_files(binary, "finite1[[:digit:]]+_0_100_FALSETRUE.rds")
@@ -24,7 +24,7 @@ fop4_0 <- find_files(binary, "finite1[[:digit:]]+_4_0_FALSETRUE.rds")
 res_ao0_100 <- read_results("binary", ao0_100)
 res_ao4_0 <- read_results("binary", ao4_0)
 res_fo0_100 <- read_results("binary", fo0_100, TRUE)
-res_fo4_0 <- read_results("binary", fo4_0, TRUE)
+res_fo1_4_0 <- read_results("binary", fo1_4_0, TRUE)
 res_f2o0_100 <- read_results("binary", f2o0_100, TRUE)
 res_f2o4_0 <- read_results("binary", f2o4_0, TRUE)
 res_fop0_100 <- read_results("binary", fop0_100, TRUE)
@@ -61,7 +61,7 @@ res_f2r4_0 <- read_results("binary", f2r4_0, TRUE)
 bias_cdf(res_ao0_100, limits = c(0, 0.15), "binary_ao_0_100")   # asymptotic, 0 binary, 100 continuous
 bias_cdf(res_ao4_0, limits = c(0, 0.15), "binary_ao_4_0")       # asymptotic, 4 binary, 0 continuous
 bias_cdf(res_fo0_100, limits = c(0, 0.25), "binary_fo_0_100")   # finite (n = 500), 0 binary, 100 continuous
-bias_cdf(res_fo4_0, limits = c(0, 0.25), "binary_fo_4_0")       # finite (n = 500), 4 binary, 0 continuous
+bias_cdf(res_fo1_4_0, limits = c(0, 0.25), "binary_fo1_4_0")       # finite (n = 500), 4 binary, 0 continuous
 bias_cdf(res_f2o0_100, limits = c(0, 0.2), "binary_f2o_0_100")  # finite (n = 2500), 0 binary, 100 continuous
 bias_cdf(res_f2o4_0, limits = c(0, 0.2), "binary_f2o_4_0")      # finite (n = 2500), 4 binary, 0 continuous 
 bias_cdf(res_ar0_100, file = "binary_ar_0_100")                 # asymptotic, randomized, 0 binary, 100 continuous
