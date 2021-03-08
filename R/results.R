@@ -1,6 +1,6 @@
 read_results <- function(context, regex) {
   files <- find_files(context, regex)
-  out <- purrr::map_dfr(files, function(file) {
+  out <- purrr::map(files, function(file) {
     x <- readRDS(file)
     if (inherits(x, "try-error")) {
       return(NULL)
