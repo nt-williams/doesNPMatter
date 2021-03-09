@@ -47,8 +47,8 @@ bias_cdf <- function(data, limits = NULL, file = NULL) {
   
   if (!is.null(data$tmlep_bias)) {
     out <- out + 
-      geom_line(aes(x = abs(tmlep_bias), y = 1 - ..y.., color = "darkgreen"), 
-                stat = 'ecdf', alpha = 0.65) + 
+      #geom_line(aes(x = abs(tmlep_bias), y = 1 - ..y.., color = "darkgreen"), 
+                #stat = 'ecdf', alpha = 0.65) + 
       scale_color_identity(breaks = c("blue", "red", "darkgreen"),
                            labels = c("TMLE+DA", "G-comp.", "TMLE+GLM"),
                            guide = "legend")
