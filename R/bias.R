@@ -14,9 +14,10 @@
 #'   and the result from TMLE.
 #' 
 #' @author Nicholas Williams and Iván Díaz
+#' @export
 bias <- function(context = c("binary", "ordinal", "tte"), seed, n, 
                  reps, size, binary_cnf, cont_cnf, 
-                 randomized = FALSE, parametric = FALSE) {
+                 randomized = FALSE, parametric = FALSE, crossfit = FALSE) {
   dist <- create_dist(binary_cnf, cont_cnf, if (match.arg(context) == "binary") 2 else size, randomized, seed)
   data <- gendata(dist, n, reps, if (match.arg(context) == "tte") TRUE else FALSE)
   truth <- 
@@ -32,15 +33,15 @@ bias <- function(context = c("binary", "ordinal", "tte"), seed, n,
   }
   estims <- 
     switch(match.arg(context), 
-           binary = binary(data, parametric || randomized), 
+           binary = binary(data, parametric || randomized, crossfit), 
            ordinal = ordinal(data), 
-           tte = bias_tte(data, randomized))
+           tte = tte(data, randomized))
   c(list(dist = dist, pos = positivity(dist), truth = truth), vnorm, estims)
 }
 
-binary <- function(data, parametric) {
+binary <- function(data, parametric, crossfit) {
   list(param = binary_param(data),
-       tmle = binary_tmle(data, parametric))
+       tmle = binary_tmle(data, parametric, crossfit))
 }
 
 binary_param <- function(data) {
@@ -56,8 +57,8 @@ binary_param <- function(data) {
   unlist(out)
 }
 
-binary_tmle <- function(data, parametric) {
-  out <- lapply(data, function(d) tmle(d, parametric = parametric))
+binary_tmle <- function(data, parametric, crossfit) {
+  out <- lapply(data, function(d) tmle(d, parametric = parametric, crossfit = crossfit))
   unlist(out)
 }
 

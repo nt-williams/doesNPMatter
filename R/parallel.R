@@ -5,6 +5,7 @@
 #' @return Saves results files.
 #' 
 #' @author Nicholas Williams and Iván Díaz
+#' @export
 partition <- function(task) {
   index <- (1:nrow(task$tasks))[(0:(nrow(task$tasks) - 1)) %/% (nrow(task$tasks) / task$machines) + 1 == task$id]
   out <- list()
@@ -20,7 +21,8 @@ partition <- function(task) {
              task$reps, task$size,
              task$tasks$binary_cnf[i], task$tasks$cont_cnf[row], 
              randomized = task$tasks$randomized[row], 
-             parametric = task$tasks$parametric[row])
+             parametric = task$tasks$parametric[row], 
+             crossfit = task$tasks$crossfit[row])
       )
     }, globals = globals, packages = task$pkgs, seed = TRUE)
     
@@ -32,7 +34,8 @@ partition <- function(task) {
                                            row, "_", 
                                            task$tasks$binary_cnf[row], "_", 
                                            task$tasks$cont_cnf[row], "_", 
-                                           task$tasks$randomized[row], 
-                                           task$tasks$parametric[row], ".rds")))
+                                           task$tasks$randomized[row], "_",
+                                           task$tasks$parametric[row], "_",
+                                           task$tasks$crossfit[row], ".rds")))
   }
 }

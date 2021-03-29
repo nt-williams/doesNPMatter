@@ -27,7 +27,7 @@ xgb3 <- create.Learner("SL.xgboost", detailed_names = TRUE,
 xgb4 <- create.Learner("SL.xgboost", detailed_names = TRUE,
                        tune = lapply(pg, function(x) x[4]))
 
-SL_lib <- c("SL.glm.interaction", "SL.gam", "SL.earth",
+SL_lib <- c("SL.glm.interaction", "SL.earth",
             xgb1$names, xgb2$names, xgb3$names, xgb4$names)
 SL_lib_param <- c("SL.glm.interaction")
 
@@ -97,10 +97,27 @@ fit_tilt <- function(otcr, prop) {
   coef(glm2::glm2(Y ~ -1 + clever + offset(qlogis(Y.org)), data = new, family = "binomial"))
 }
 
-tmle <- function(data, parametric) {
-  otcr <- fit_otcr(data, parametric)
-  prop <- fit_prop(data, parametric)
-  eps <- fit_tilt(otcr, prop)
-  mean(plogis(qlogis(otcr$Y.on) + eps*prop$prob.on)) -
-    mean(plogis(qlogis(otcr$Y.off) + eps*prop$prob.off))
+#' @export
+tmle <- function(data, parametric, crossfit) {
+  if (parametric || crossfit == FALSE) {
+    otcr <- fit_otcr(data, parametric)
+    prop <- fit_prop(data, parametric)
+    eps <- fit_tilt(otcr, prop)
+    return(mean(plogis(qlogis(otcr$Y.on) + eps*prop$prob.on)) -
+             mean(plogis(qlogis(otcr$Y.off) + eps*prop$prob.off)))
+  } else {
+    n <- nrow(data)
+    if (n > 1000) {
+      folds <- 2
+    } else {
+      folds <- 10
+    }
+    on <- lmtp::lmtp_tmle(as.data.frame(data), "trt", "outcome", grep("^cnf", names(data), value = TRUE), 
+                          shift = lmtp::static_binary_on, learners_outcome = SL_lib, 
+                          learners_trt = SL_lib, folds = folds, .SL_folds = folds)
+    off <- lmtp::lmtp_tmle(as.data.frame(data), "trt", "outcome", grep("^cnf", names(data), value = TRUE), 
+                           shift = lmtp::static_binary_off, learners_outcome = SL_lib, 
+                           learners_trt = SL_lib, folds = folds, .SL_folds = folds)
+    return(lmtp::lmtp_contrast(on, ref = off)$vals$theta)
+  }
 }

@@ -11,6 +11,7 @@ binary_cnf <- as.numeric(args[3])
 cont_cnf <- as.numeric(args[4])
 randomized <- as.logical(args[5])
 parametric <- as.logical(args[6])
+crossfit <- as.logical(args[7])
 
 # library path for local R packages
 .libPaths("/home/niw4001/R_local")
@@ -31,7 +32,6 @@ task <- list(
   machines = config$machines,
   n = config$nobs, 
   reps = config$reps, 
-  m = config$reps, 
   size = config$size, 
   progfile = config$progfile,
   errfile = config$errfile,
@@ -42,7 +42,8 @@ task <- list(
                       binary_cnf = binary_cnf, 
                       cont_cnf = cont_cnf, 
                       randomized = randomized, 
-                      parametric = parametric)
+                      parametric = parametric, 
+                      crossfit = crossfit)
 )
 
 plan(multisession)
