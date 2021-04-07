@@ -1,24 +1,36 @@
 read_results <- function(context, regex) {
   files <- find_files(context, regex)
-  out <- purrr::map(files, function(file) {
+  out <- purrr::map_dfr(files, function(file) {
     x <- readRDS(file)
     if (inherits(x, "try-error")) {
       return(NULL)
     }
+    cop <- x
     if (length(x$param) > 1) {
+      x$tse_tmle <- sd(x$tmle, na.rm = TRUE)
+      x$tse_param <- sd(x$param, na.rm = TRUE)
       x$tmle_mse <- mse(x$tmle, x$truth)
       x$param_mse <- mse(x$param, x$truth)
-      x$param <- mean(x$param, na.rm = TRUE)
-      x$tmle <- mean(x$tmle, na.rm = TRUE)
+      x$coverage_tmle <- mean(purrr::map_lgl(x$tmle, ~ covered(.x, x$tse_tmle, x$truth)), na.rm = TRUE)
+      x$coverage_param <- mean(purrr::map_lgl(x$param, ~ covered(.x, x$tse_param, x$truth)), na.rm = TRUE)
     }
     data.table(truth = x$truth, pos = x$pos, 
                vn1 = x$vn1, vn0 = x$vn0, vn_cate = x$vn_cate,
-               param = x$param, tmle = x$tmle, 
-               tmle_mse = x$tmle_mse, param_mse = x$param_mse)
+               param = mean(x$param, na.rm = TRUE), tmle = mean(x$tmle, na.rm = TRUE), 
+               tmle_mse = x$tmle_mse, param_mse = x$param_mse, 
+               tmle_coverage = x$coverage_tmle, 
+               param_coverage = x$coverage_param, 
+               tmle_estimates = list(x$tmle), 
+               param_estimates = list(x$param))
   })
   setDT(out)
   out[, `:=`(tmle_bias = tmle - truth, 
              param_bias = param - truth)][]
+}
+
+covered <- function(theta, se, truth) {
+  z <- qnorm(0.975)
+  (theta - z * se < truth) && (truth < theta + z * se)
 }
 
 mse <- function(x_i, x_bar) {
