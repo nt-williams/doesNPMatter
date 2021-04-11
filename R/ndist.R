@@ -36,18 +36,20 @@ create_dist <- function(binary_cnf, cont_cnf, size = 2, randomized = FALSE, seed
   dist_y <- cbind(unique_pos, prob_y = rdirichlet(1, rep(1, size^2))[1, ])
   
   ## generate P(W | Y_1, Y_0) and append
-  df_w <- runif(1, 0, 20)
+  ## df_w <- runif(1, 0, 20)
   dist_w <- setNames(data.table(matrix(nrow = 0, ncol = 4 + length(nms_cnf))), c("y1", "y0", "prob_y", nms_cnf, "prob_w"))
   for (i in 1:nrow(unique_pos)) {
-    dist_w <- rbind(dist_w, cbind(dist_y[i, ], unique_cnf, prob_w = rdirichlet(1, rchisq(2^binary_cnf * cont_cnf, df_w))[1, ]))
+    ## dist_w <- rbind(dist_w, cbind(dist_y[i, ], unique_cnf, prob_w = rdirichlet(1, rchisq(2^binary_cnf * cont_cnf, df_w))[1, ]))
+    dist_w <- rbind(dist_w, cbind(dist_y[i, ], unique_cnf, prob_w = rdirichlet(1, rep(1, 2^binary_cnf * cont_cnf))[1, ]))
   }
   
   ## generate P(A | W)
-  df_a <- runif(1, 0, 20)
+  ## df_a <- runif(1, 0, 20)
   dist_a <- setNames(data.table(matrix(nrow = 0, ncol = 2 + length(nms_cnf))), c(nms_cnf, "trt", "prob_a"))
   for (j in 1:nrow(unique_cnf)) {
     if (!randomized) {
-      prob_a <- rdirichlet(1, rchisq(2, df_a))[1, ]
+      ## prob_a <- rdirichlet(1, rchisq(2, df_a))[1, ]
+      prob_a <- rdirichlet(1, rep(1, 2))[1, ]
     } else {
       prob_a <- rep(1/2, 2)
     }
@@ -112,8 +114,8 @@ positivity <- function(dist) {
                     prob_w = sum(prob)), cnf]
   data.table::setorderv(probs, cnf)
   prob_a <- with(probs, weighted.mean(prob_trt, prob_w))
-  p1 <- probs[, max(prob_a / prob_trt)]
-  p0 <- probs[, max((1 - prob_a) / (1 - prob_trt))]
+  p1 <- probs[, max(prob_w / prob_trt)]
+  p0 <- probs[, max((prob_w / (1 - prob_trt))]
   max(p1, p0)
 }
 
