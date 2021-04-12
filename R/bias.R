@@ -10,33 +10,34 @@
 #' @param randomized Simulate an randomized controlled trial (i.e., probability of treatment is 0.5)?
 #' @param parametric Estimate TMLE using just GLM? Only used with `context = "binary"`.
 #'
-#' @return A list of the true value, the result from parametric G-computation, 
+#' @return A list of the true value, the result from parametric G-computation,
 #'   and the result from TMLE.
-#' 
+#'
 #' @author Nicholas Williams and Iván Díaz
 #' @export
-bias <- function(context = c("binary", "ordinal", "tte"), seed, n, 
-                 reps, size, binary_cnf, cont_cnf, 
+bias <- function(context = c("binary", "ordinal", "tte"), seed, n,
+                 reps, size, binary_cnf, cont_cnf,
                  randomized = FALSE, parametric = FALSE, crossfit = FALSE) {
   dist <- create_dist(binary_cnf, cont_cnf, if (match.arg(context) == "binary") 2 else size, randomized, seed)
   data <- gendata(dist, n, reps, if (match.arg(context) == "tte") TRUE else FALSE)
-  truth <- 
-    switch(match.arg(context), 
-           binary = truth_binary(dist), 
-           ordinal = truth_ordinal(dist), 
+  truth <-
+    switch(match.arg(context),
+           binary = truth_binary(dist),
+           ordinal = truth_ordinal(dist),
            tte = truth_tte(dist))
+  pos <- positivity(dist)
   vnorm <- {
-    if (cont_cnf > 0 && match.arg(context) == "binary")
+    if (cont_cnf > 1 && match.arg(context) == "binary")
       variation_norm(dist)
-    else 
+    else
       NULL
   }
-  estims <- 
-    switch(match.arg(context), 
-           binary = binary(data, parametric || randomized, crossfit), 
-           ordinal = ordinal(data), 
+  estims <-
+    switch(match.arg(context),
+           binary = binary(data, parametric || randomized, crossfit),
+           ordinal = ordinal(data),
            tte = tte(data, randomized))
-  c(list(dist = dist, pos = positivity(dist), truth = truth), vnorm, estims)
+  c(list(dist = dist, pos = pos, truth = truth), vnorm, estims)
 }
 
 binary <- function(data, parametric, crossfit) {
@@ -44,22 +45,27 @@ binary <- function(data, parametric, crossfit) {
        tmle = binary_tmle(data, parametric, crossfit))
 }
 
+
 binary_param <- function(data) {
   out <- lapply(data, function(d) {
     on <- copy(d)
     off <- copy(d)
     on[, trt := 1]
     off[, trt := 0]
-    pf <- glm(outcome ~ trt*(.), data = d, family = "binomial")
-    mean(predict(pf, newdata = on, type = "response") - 
+    pf <- glm(outcome ~ trt + ., data = d, family = "binomial")
+    mean(predict(pf, newdata = on, type = "response") -
            predict(pf, newdata = off, type = "response"))
   })
   unlist(out)
 }
 
 binary_tmle <- function(data, parametric, crossfit) {
-  out <- lapply(data, function(d) tmle(d, parametric = parametric, crossfit = crossfit))
-  unlist(out)
+    out <- lapply(data, function(d){
+        tt <- try(tmle(d, parametric = parametric, crossfit = crossfit))
+        return(tt)
+    }
+    )
+    unlist(out)
 }
 
 ordinal <- function(data) {
@@ -68,19 +74,19 @@ ordinal <- function(data) {
 }
 
 ordinal_param <- function(data) {
-  out <- lapply(data, function(d) {
-    on <- copy(d)
-    off <- copy(d)
-    on[, trt := 1]
-    off[, trt := 0]
-    d[, outcome := factor(outcome, ordered = TRUE)]
-    pf <- ordinal::clm(outcome ~ trt*(.), data = d)
-    on_pred <- predict(pf, newdata = on[, -"outcome", with = FALSE], type = "prob")$fit
-    on_prob <- cumsum(colMeans(on_pred))[-ncol(on_pred)]
-    off_pred <- predict(pf, newdata = off[, -"outcome", with = FALSE], type = "prob")$fit
-    off_prob <- cumsum(colMeans(off_pred))[-ncol(off_pred)]
-    mean(qlogis(on_prob) - qlogis(off_prob))
-  })
+    out <- lapply(data, function(d) {
+        on <- copy(d)
+        off <- copy(d)
+        on[, trt := 1]
+        off[, trt := 0]
+        d[, outcome := factor(outcome, ordered = TRUE)]
+        pf <- ordinal::clm(outcome ~ trt + ., data = d)
+        on_pred <- predict(pf, newdata = on[, -"outcome", with = FALSE], type = "prob")$fit
+        on_prob <- cumsum(colMeans(on_pred))[-ncol(on_pred)]
+        off_pred <- predict(pf, newdata = off[, -"outcome", with = FALSE], type = "prob")$fit
+        off_prob <- cumsum(colMeans(off_pred))[-ncol(off_pred)]
+        mean(qlogis(on_prob) - qlogis(off_prob))
+    })
   unlist(out)
 }
 
@@ -93,9 +99,9 @@ ordinal_tmle <- function(data) {
     drord(out = d$outcome, treat = d$trt,
           covar = d[, cnf, with = FALSE],
           treat_form = ".",
-          out_form = ".",
-          out_model = "clm",
-          ci = 'wald', 
+          out_model = "pooled-logistic",
+          ci = 'wald',
+          nboot = 1,
           est_dist = FALSE)$log_odds$est[3]
   })
   unlist(out)
@@ -117,7 +123,7 @@ tte_param <- function(data) {
     off[, trt := 0]
     pf <- survival::coxph(survival::Surv(time, status) ~ trt*(.), data = use)
     out[[i]] <- mean(predict_coxph(pf, 12, on)) - mean(predict_coxph(pf, 12, off))
-  } 
+  }
   unlist(out)
 }
 
@@ -125,7 +131,7 @@ tte_tmle <- function(data, randomized) {
   lrnrs <- {
     if (randomized)
       "SL.glm.interaction"
-    else 
+    else
       c("SL.glm", "SL.gam", "SL.earth")
   }
   cnf <- grep("^cnf", names(data[[1]]), value = TRUE)

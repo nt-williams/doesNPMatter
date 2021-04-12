@@ -9,6 +9,7 @@ finite3:
   nobs: 500
   m: 5000
   reps: 250
+  machines: 1000	
   progfile: !expr here::here("ordinal-finite3-progress.txt")
   errfile: !expr here::here("ordinal-finite3-error.txt")
   
@@ -16,6 +17,7 @@ finite2:
   nobs: 500
   m: 5000
   reps: 250
+  machines: 1000
   progfile: !expr here::here("ordinal-finite2-progress.txt")
   errfile: !expr here::here("ordinal-finite2-error.txt")
   
@@ -23,6 +25,7 @@ finite1:
   nobs: 2500
   m: 5000
   reps: 250
+  machines: 1000
   progfile: !expr here::here("ordinal-finite1-progress.txt")
   errfile: !expr here::here("ordinal-finite1-error.txt")
   
@@ -30,6 +33,7 @@ asymp:
   nobs: 100000
   m: 5000
   reps: 1
+  machines: 1000
   progfile: !expr here::here("ordinal-asymp-progress.txt")
   errfile: !expr here::here("ordinal-asymp-error.txt")
 
