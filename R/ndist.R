@@ -109,11 +109,7 @@ positivity <- function(dist) {
   data.table::setorderv(probs, cnf)
   prob_a <- with(probs, weighted.mean(prob_trt, prob_w))
   p1 <- probs[, max(prob_w / prob_trt)]
-<<<<<<< HEAD
   p0 <- probs[, max(prob_w / (1 - prob_trt))]
-=======
-  p0 <- probs[, max((prob_w / (1 - prob_trt))]
->>>>>>> 2794ff3753473ecded8319b77ec0c793e74f28ba
   max(p1, p0)
 }
 
