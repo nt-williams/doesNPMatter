@@ -10,15 +10,15 @@ f1o10_0 <- readRDS("./data/res/binary_finite1_10_0_FALSE_FALSE_FALSE.rds")
 f2o10_0 <- readRDS("./data/res/binary_finite2_10_0_FALSE_FALSE_FALSE.rds")
 f3o10_0 <- readRDS("./data/res/binary_finite3_10_0_FALSE_FALSE_FALSE.rds")
 
-aop10_0 <- readRDS("./data/res/binary_asymp_10_0_FALSE_TRUE_FALSE.rds")
-f1op10_0 <- readRDS("./data/res/binary_finite1_10_0_FALSE_TRUE_FALSE.rds")
-f2op10_0 <- readRDS("./data/res/binary_finite2_10_0_FALSE_TRUE_FALSE.rds")
-f3op10_0 <- readRDS("./data/res/binary_finite3_10_0_FALSE_TRUE_FALSE.rds")
+aop10_0 <- readRDS("./data/res/binary_asymp_10_0_FALSE_TRUE_TRUE.rds")
+f1op10_0 <- readRDS("./data/res/binary_finite1_10_0_FALSE_TRUE_TRUE.rds")
+f2op10_0 <- readRDS("./data/res/binary_finite2_10_0_FALSE_TRUE_TRUE.rds")
+f3op10_0 <- readRDS("./data/res/binary_finite3_10_0_FALSE_TRUE_TRUE.rds")
 
 aoc10_0 <- readRDS("./data/res/binary_asymp_10_0_FALSE_FALSE_TRUE.rds")
 f1oc10_0 <- readRDS("./data/res/binary_finite1_10_0_FALSE_FALSE_TRUE.rds")
 f2oc10_0 <- readRDS("./data/res/binary_finite2_10_0_FALSE_FALSE_TRUE.rds")
-f3oc10_0 <- readRDS("./data/res/binary_finite3_10_0_FALSE_FALSE_TRUE.rds")
+# f3oc10_0 <- readRDS("./data/res/binary_finite3_10_0_FALSE_FALSE_TRUE.rds")
 
 for (dt in list(aop10_0, f1op10_0, f2op10_0, f3op10_0)) {
   setnames(dt, c("tmle", "tmle_bias", "tmle_mse", "tmle_estimates"), 
@@ -31,6 +31,51 @@ for (dt in list(aoc10_0, f1oc10_0, f2oc10_0, f3oc10_0)) {
            c("tmlec", "tmlec_bias", "tmlec_mse", "tmlec_estimates"), 
            skip_absent = TRUE)
 }
+
+ggplot(ao10_0) +
+  geom_line(aes(x = abs(tmle_bias), y = 1 - ..y.., color = "blue"), stat = 'ecdf', 
+            alpha = 0.5) +
+  geom_line(aes(x = abs(param_bias), y = 1 - ..y.., color = "red"), stat = 'ecdf', 
+            alpha = 0.5) + 
+  geom_line(data = aop10_0, aes(x = abs(tmle_bias), y = 1 - ..y.., color = "darkgreen"), stat = 'ecdf', 
+            alpha = 0.5) +
+  geom_line(data = aoc10_0, aes(x = abs(tmle_bias), y = 1 - ..y.., color = "orange"), stat = 'ecdf', 
+            alpha = 0.5) +
+  scale_color_identity(breaks = c("red", "darkgreen", "blue", "orange"), 
+                       labels = c("G-comp.", expression("TMLE"[1]), expression("TMLE"[2]), expression("TMLE"[3])), 
+                       guide = "legend") +
+  scale_x_continuous(expand = c(0.025, 0), limits = c(0, 0.15)) + 
+  scale_y_continuous(expand = c(0.01, 0.01))
+
+ggplot(f1o10_0) +
+  geom_line(aes(x = abs(tmle_bias), y = 1 - ..y.., color = "blue"), stat = 'ecdf', 
+            alpha = 0.5) +
+  geom_line(aes(x = abs(param_bias), y = 1 - ..y.., color = "red"), stat = 'ecdf', 
+            alpha = 0.5) + 
+  geom_line(data = f1op10_0, aes(x = abs(tmle_bias), y = 1 - ..y.., color = "darkgreen"), stat = 'ecdf', 
+            alpha = 0.5) +
+  geom_line(data = f1oc10_0, aes(x = abs(tmle_bias), y = 1 - ..y.., color = "orange"), stat = 'ecdf', 
+            alpha = 0.5) +
+  scale_color_identity(breaks = c("red", "darkgreen", "blue", "orange"), 
+                       labels = c("G-comp.", expression("TMLE"[1]), expression("TMLE"[2]), expression("TMLE"[3])), 
+                       guide = "legend") +
+  scale_x_continuous(expand = c(0.025, 0), limits = c(0, 0.15)) + 
+  scale_y_continuous(expand = c(0.01, 0.01))
+
+ggplot(f2o10_0) +
+  geom_line(aes(x = abs(tmle_bias), y = 1 - ..y.., color = "blue"), stat = 'ecdf', 
+            alpha = 0.5) +
+  geom_line(aes(x = abs(param_bias), y = 1 - ..y.., color = "red"), stat = 'ecdf', 
+            alpha = 0.5) + 
+  geom_line(data = f2op10_0, aes(x = abs(tmle_bias), y = 1 - ..y.., color = "darkgreen"), stat = 'ecdf', 
+            alpha = 0.5) +
+  geom_line(data = f2oc10_0, aes(x = abs(tmle_bias), y = 1 - ..y.., color = "orange"), stat = 'ecdf', 
+            alpha = 0.5) +
+  scale_color_identity(breaks = c("red", "darkgreen", "blue", "orange"), 
+                       labels = c("G-comp.", expression("TMLE"[1]), expression("TMLE"[2]), expression("TMLE"[3])), 
+                       guide = "legend") +
+  scale_x_continuous(expand = c(0.025, 0), limits = c(0, 0.15)) + 
+  scale_y_continuous(expand = c(0.01, 0.01))
 
 ao10_0 <- merge(ao10_0, aop10_0[, .(truth, tmlep, tmlep_bias)], by = "truth", all = TRUE)
 f1o10_0 <- merge(f1o10_0, f1op10_0[, .(truth, tmlep, tmlep_bias, tmlep_mse)], by = "truth", all = TRUE)
