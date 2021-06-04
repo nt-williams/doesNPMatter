@@ -1,0 +1,9 @@
+default:
+  machines: 1000
+
+test: 
+  dgp_path: "./data/DGP_5_uniform_20.rds"
+  reps: 1
+  nobs: 100000
+  method: "gcomp"
+  signature: "test"

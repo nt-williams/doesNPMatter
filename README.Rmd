@@ -1,0 +1,10 @@
+---
+title: "Simulations for paper 'All models are wrong, but which are useful? Estimation of causal effects in randomized and observational studies'"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+* Using the development version of lmtp

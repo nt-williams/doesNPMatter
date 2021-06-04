@@ -1,3 +1,5 @@
+box::use(data.table[...], utils[flush.console])
+
 #' Sample a DGP with constraints on the amount of confounding bias and positivity.
 #'
 #' @param xs The number of binary covariates. Used to calculate k, the cardinality of the support of the covariates.
@@ -5,11 +7,7 @@
 #' @param gamma Bound on the maximum stabilized weights.
 #' @param tol Tolerance around constructing a DGP with bias eta.
 #'
-#' @return
 #' @export
-#'
-#' @examples
-#' dgp(2, 0.5, 20)
 #' 
 #' @author Caleb Miles
 dgp <- function(xs = 2, eta, gamma, tol = 0.01) {
@@ -70,6 +68,10 @@ dgp <- function(xs = 2, eta, gamma, tol = 0.01) {
   )
 }
 
+#' Create a look-up table for the cells of a DGP with the probability for belonging to a given cell
+#' 
+#' @param dgp a DGP created with \code{dgp}.
+#' 
 #' @export
 dgp_lookup <- function(dgp) {
   px <- dgp$px
@@ -89,9 +91,35 @@ dgp_lookup <- function(dgp) {
                px * pi * q[1:k])][]
 }
 
+#' Sample data from a DGP look-up table.
+#' 
+#' @param dgp A look-up table created with \code{dgp_lookup}.
+#' @param n number of observations to draw.
+#' 
 #' @export
 sample_dgp <- function(dgp, n) {
-  dgpc <- copy(.)
+  dgpc <- copy(dgp)
   out <- dgpc[sample(1:nrow(dgpc), size = n, replace = TRUE, prob = dgpc$p), ]
   out[, p := NULL][]
+}
+
+alt_01 <- function(meta, x, cats = 2) {
+  ((meta - 1) %/% x) %% cats
+}
+
+#' Calculate true ATE from DGP look-up table.
+#' 
+#' This function isn't used for the truth calculations in simulations. 
+#'  Instead it serves as a convenience function for testing.
+#'  
+#' @param dgp A look-up table created with \code{dgp_lookup}.
+#' 
+#' @export
+truth <- function(dgp) {
+  dgpc <- copy(dgp)
+  nms_cnf <- grep("^cnf", names(dgp), value = TRUE)
+  dgpc[, prob_w := sum(p), by = nms_cnf]
+  dgpc[, prob_y := sum(y * p) / sum(p), by = c('trt', nms_cnf)]
+  out <- dgpc[y == 1, .(pr = sum(prob_y * prob_w, na.rm = TRUE)), by = 'trt']
+  return(out[trt == 1, ]$pr - out[trt == 0, ]$pr)
 }

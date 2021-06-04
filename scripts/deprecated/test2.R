@@ -32,7 +32,7 @@ for (dt in list(aoc10_0, f1oc10_0, f2oc10_0, f3oc10_0)) {
            skip_absent = TRUE)
 }
 
-ggplot(ao10_0) +
+x1 <- ggplot(ao10_0) +
   geom_line(aes(x = abs(tmle_bias), y = 1 - ..y.., color = "blue"), stat = 'ecdf', 
             alpha = 0.5) +
   geom_line(aes(x = abs(param_bias), y = 1 - ..y.., color = "red"), stat = 'ecdf', 
@@ -44,10 +44,12 @@ ggplot(ao10_0) +
   scale_color_identity(breaks = c("red", "darkgreen", "blue", "orange"), 
                        labels = c("G-comp.", expression("TMLE"[1]), expression("TMLE"[2]), expression("TMLE"[3])), 
                        guide = "legend") +
+  labs(color = "Model", 
+       x = "|Bias|") + 
   scale_x_continuous(expand = c(0.025, 0), limits = c(0, 0.15)) + 
   scale_y_continuous(expand = c(0.01, 0.01))
 
-ggplot(f1o10_0) +
+x2 <- ggplot(f1o10_0) +
   geom_line(aes(x = abs(tmle_bias), y = 1 - ..y.., color = "blue"), stat = 'ecdf', 
             alpha = 0.5) +
   geom_line(aes(x = abs(param_bias), y = 1 - ..y.., color = "red"), stat = 'ecdf', 
@@ -59,10 +61,12 @@ ggplot(f1o10_0) +
   scale_color_identity(breaks = c("red", "darkgreen", "blue", "orange"), 
                        labels = c("G-comp.", expression("TMLE"[1]), expression("TMLE"[2]), expression("TMLE"[3])), 
                        guide = "legend") +
+  labs(color = "Model", 
+       x = "|Bias|") + 
   scale_x_continuous(expand = c(0.025, 0), limits = c(0, 0.15)) + 
   scale_y_continuous(expand = c(0.01, 0.01))
 
-ggplot(f2o10_0) +
+x3 <- ggplot(f2o10_0) +
   geom_line(aes(x = abs(tmle_bias), y = 1 - ..y.., color = "blue"), stat = 'ecdf', 
             alpha = 0.5) +
   geom_line(aes(x = abs(param_bias), y = 1 - ..y.., color = "red"), stat = 'ecdf', 
@@ -74,8 +78,12 @@ ggplot(f2o10_0) +
   scale_color_identity(breaks = c("red", "darkgreen", "blue", "orange"), 
                        labels = c("G-comp.", expression("TMLE"[1]), expression("TMLE"[2]), expression("TMLE"[3])), 
                        guide = "legend") +
+  labs(color = "Model", 
+       x = "|Bias|") + 
   scale_x_continuous(expand = c(0.025, 0), limits = c(0, 0.15)) + 
   scale_y_continuous(expand = c(0.01, 0.01))
+
+wrap_plots(x1, x2, x3) + plot_layout(guides = "collect")
 
 ao10_0 <- merge(ao10_0, aop10_0[, .(truth, tmlep, tmlep_bias)], by = "truth", all = TRUE)
 f1o10_0 <- merge(f1o10_0, f1op10_0[, .(truth, tmlep, tmlep_bias, tmlep_mse)], by = "truth", all = TRUE)
