@@ -7,7 +7,11 @@
 # It loads a configuration file, loads the corresponding DGMs, partitions
 #  the computing cluster, and runs/saves simulation results.
 
-box::use(../R/nbias[simulate], config[get], data.table[...])
+.libPaths("/home/niw4001/R_local")
+
+setwd(here::here())
+
+box::use(./R/nbias[simulate], config[get], data.table[...])
 
 # capture the name of the configuration passed to Rscript as a parameter
 args <- commandArgs(trailingOnly = TRUE)
@@ -15,6 +19,11 @@ sim_config <- args[1]
 
 # capture Slurm task id
 slurm_id <- as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID"))
+
+if (is.na(slurm_id)) {
+  # Slurm id isn't created during tests locally
+  slurm_id <- 1
+}
 
 # capture config file
 task <- get(file = "./scripts/config.yml", config = sim_config)
@@ -37,6 +46,8 @@ for (i in 1:length(do)) {
 
 # save results with a unique identifier for the configuration and Slurm task
 signature <- paste0(task$signature, "_", slurm_id, ".rds")
-saveRDS(results, file.path("./data/res/", unique_path))
+saveRDS(results, file.path("./data/res/", signature))
+
+cat("Exit status:", 0, "\n")
 
 quit("no")

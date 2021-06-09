@@ -1,8 +1,10 @@
 box::use(data.table[...], utils[flush.console])
 
-#' Sample a DGP with constraints on the amount of confounding bias and positivity.
+#' Sample a DGP with constraints on the amount of 
+#' confounding bias and positivity.
 #'
-#' @param xs The number of binary covariates. Used to calculate k, the cardinality of the support of the covariates.
+#' @param xs The number of binary covariates. Used to calculate k, 
+#'   the cardinality of the support of the covariates.
 #' @param eta Confounding bias.
 #' @param gamma Bound on the maximum stabilized weights.
 #' @param tol Tolerance around constructing a DGP with bias eta.
@@ -45,16 +47,19 @@ dgp <- function(xs = 2, eta, gamma, tol = 0.01) {
   A_q <- rbind(
     -diag(2 * k), 
     diag(2 * k),
-    c(p * (pi - as.numeric(p %*% pi)) / as.numeric(p %*% pi), -p * (1 - pi - as.numeric(p %*% (1 - pi))) / as.numeric(p %*% (1 - pi))),
-    c(-p * (pi - as.numeric(p %*% pi)) / as.numeric(p %*% pi), p * (1 - pi - as.numeric(p %*% (1 - pi))) / as.numeric(p %*% (1 - pi)))
+    c(p * (pi - as.numeric(p %*% pi)) / as.numeric(p %*% pi), -p * 
+        (1 - pi - as.numeric(p %*% (1 - pi))) / as.numeric(p %*% (1 - pi))),
+    c(-p * (pi - as.numeric(p %*% pi)) / as.numeric(p %*% pi), p * 
+        (1 - pi - as.numeric(p %*% (1 - pi))) / as.numeric(p %*% (1 - pi)))
   )
   
-  b_q <- c(rep(0, 2 * k), rep(1, 2 * k), eta + tol, -(eta - tol)) # Here I'm constraining the bias to be within 0.01 of eta. With smaller tolerances, the q probabilities tend to start concentrating toward zero for some reason.
+  b_q <- c(rep(0, 2 * k), rep(1, 2 * k), eta + tol, -(eta - tol))
   poly_q <- volesti::Hpolytope(A = A_q, b = b_q)
   q <- as.numeric(volesti::sample_points(poly_q, 1))
   
   truth <- (q[1:k] - q[(k + 1):(2 * k)]) %*% p
-  unadj <- q[1:k] %*% (p * pi) / as.numeric(p %*% pi) - q[(k + 1):(2 * k)] %*% (p * (1 - pi)) / as.numeric(p %*% (1 - pi))
+  unadj <- q[1:k] %*% (p * pi) / as.numeric(p %*% pi) - 
+    q[(k + 1):(2 * k)] %*% (p * (1 - pi)) / as.numeric(p %*% (1 - pi))
 
   cat("\n")
   list(
@@ -68,7 +73,8 @@ dgp <- function(xs = 2, eta, gamma, tol = 0.01) {
   )
 }
 
-#' Create a look-up table for the cells of a DGP with the probability for belonging to a given cell
+#' Create a look-up table for the cells of a DGP with the probability 
+#' for belonging to a given cell
 #' 
 #' @param dgp a DGP created with \code{dgp}.
 #' 
@@ -110,7 +116,7 @@ alt_01 <- function(meta, x, cats = 2) {
 #' Calculate true ATE from DGP look-up table.
 #' 
 #' This function isn't used for the truth calculations in simulations. 
-#'  Instead it serves as a convenience function for testing.
+#' Instead it serves as a convenience function for testing.
 #'  
 #' @param dgp A look-up table created with \code{dgp_lookup}.
 #' 

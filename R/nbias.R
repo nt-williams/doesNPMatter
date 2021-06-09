@@ -6,7 +6,8 @@ box::use(DGP = ./dgp, stats[...], data.table[...])
 #' @param method the estimation method used to estimate the ATE.
 #' 
 #' @export
-simulate <- function(dgp, n, reps = 1, method = c("gcomp", "ptmle", "tmle", "cvtmle")) {
+simulate <- function(dgp, n, reps = 1, 
+                     method = c("gcomp", "ptmle", "tmle", "cvtmle")) {
   lookup <- DGP$dgp_lookup(dgp)
   estims <- estimate_ATE(lookup, n, reps, match.arg(method))
   data.table(
@@ -18,7 +19,8 @@ simulate <- function(dgp, n, reps = 1, method = c("gcomp", "ptmle", "tmle", "cvt
   )
 }
 
-estimate_ATE <- function(dgp, n, reps = 1, method = c("gcomp", "ptmle", "tmle", "cvtmle")) {
+estimate_ATE <- function(dgp, n, reps = 1, 
+                         method = c("gcomp", "ptmle", "tmle", "cvtmle")) {
   .data <- replicate(reps, DGP$sample_dgp(dgp, n), simplify = FALSE)
   switch(match.arg(method), 
          gcomp = gcomputation(.data), 
