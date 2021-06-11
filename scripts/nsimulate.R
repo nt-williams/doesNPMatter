@@ -45,7 +45,7 @@ run <- function() {
   for (i in 1:length(do)) {
     setTxtProgressBar(pb, i / length(do))
     results[[i]] <- try(
-      simulate(dgps[[i]], task$nobs, reps = task$reps, method = task$method)
+      simulate(dgps[[do[i]]], task$nobs, reps = task$reps, method = task$method)
     )
   }
   close(pb)
