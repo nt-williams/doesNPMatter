@@ -1,4 +1,4 @@
-box::use(data.table[...], utils[flush.console])
+box::use(data.table[...], utils[flush.console], stats[weighted.mean])
 
 #' Sample a DGP with constraints on the amount of 
 #' confounding bias and positivity.
@@ -15,8 +15,8 @@ box::use(data.table[...], utils[flush.console])
 dgp <- function(xs = 2, eta, gamma, tol = 0.01) {
   k <- 2^xs
   search <- TRUE
-  iter <- 0
-  while (search) {
+  iter <- 1
+  while (search && iter < 1000) {
     p <- DirichletReg::rdirichlet(1, rep(1:k))[1, ] # Sampling P(x)
     
     # Sampling P(t|x)
@@ -31,8 +31,14 @@ dgp <- function(xs = 2, eta, gamma, tol = 0.01) {
     poly_pi <- volesti::Hpolytope(A = A_pi, b = b_pi)
     pi <- as.numeric(volesti::sample_points(poly_pi, 1))
     
-    bias_U <- sum(pmax(p * (pi - as.numeric(p %*% pi)) / as.numeric(p %*% pi), 0) - pmin(p * (1 - pi - as.numeric(p %*% (1 - pi))) / as.numeric(p %*% (1 - pi)), 0))
-    bias_L <- sum(pmin(p * (pi - as.numeric(p %*% pi)) / as.numeric(p %*% pi), 0) - pmax(p * (1 - pi - as.numeric(p %*% (1 - pi))) / as.numeric(p %*% (1 - pi)), 0))
+    bias_U <- sum(pmax(p * (pi - as.numeric(p %*% pi)) / 
+                         as.numeric(p %*% pi), 0) - 
+                    pmin(p * (1 - pi - as.numeric(p %*% (1 - pi))) / 
+                           as.numeric(p %*% (1 - pi)), 0))
+    bias_L <- sum(pmin(p * (pi - as.numeric(p %*% pi)) / 
+                         as.numeric(p %*% pi), 0) - 
+                    pmax(p * (1 - pi - as.numeric(p %*% (1 - pi))) / 
+                           as.numeric(p %*% (1 - pi)), 0))
     
     cat("\r", "Searching...", iter, "iterations")
     flush.console()
@@ -42,6 +48,8 @@ dgp <- function(xs = 2, eta, gamma, tol = 0.01) {
       search <- FALSE
     }
   }
+  
+  if (search == TRUE) return("Failed!")
   
   # Sampling P(Y = 1 | t, x)
   A_q <- rbind(
@@ -69,7 +77,12 @@ dgp <- function(xs = 2, eta, gamma, tol = 0.01) {
     q = q, 
     truth = truth[1],
     unadj = unadj[1],
-    bias = unadj[1] - truth[1]
+    bias = unadj[1] - truth[1], 
+    gamma = gamma, 
+    msw = max(
+      c(weighted.mean(pi, p) / pi, 
+        1 - weighted.mean(pi, p) / 1 - pi)
+    )
   )
 }
 

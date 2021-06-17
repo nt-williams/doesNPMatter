@@ -11,9 +11,13 @@ simulate <- function(dgp, n, reps = 1,
   lookup <- DGP$dgp_lookup(dgp)
   estims <- estimate_ATE(lookup, n, reps, match.arg(method))
   data.table(
+    n = n, 
+    reps = reps,
     xs = dgp$xs, 
     truth = dgp$truth, 
     unadj = dgp$unadj, 
+    gamma = dgp$gamma, 
+    msw = dgp$msw,
     confounding_bias = dgp$bias, 
     estimator_bias = mean(estims) - dgp$truth
   )
@@ -43,6 +47,13 @@ gcomputation <- function(data) {
            predict(pf, newdata = off, type = "response"))
   })
   unlist(out)
+}
+
+#' Title
+#'
+#' @param data 
+gcomputation_bart <- function(data) {
+  # TODO
 }
 
 #' Estimate the ATE using TMLE with main-effects GLMs

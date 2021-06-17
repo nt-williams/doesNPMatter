@@ -7,4 +7,4 @@ output: github_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-* Using the development version of lmtp
+

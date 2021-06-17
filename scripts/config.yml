@@ -1,9 +1,52 @@
 default:
   machines: 1000
+  
+local_test: 
+  dgp_path: "./data/DGP_5000_5bin_BiasUniform_PosUniform.rds"
+  machines: 1
+  reps: 10
+  nobs: 100
+  method: "gcomp"
+  signature: "local_test"
 
-test: 
-  dgp_path: "./data/DGP_5_uniform_20.rds"
+gcomp_asymp: 
+  dgp_path: "./data/DGP_5000_5bin_BiasUniform_PosUniform.rds"
   reps: 1
   nobs: 100000
   method: "gcomp"
-  signature: "test"
+  signature: "gcomp_asymp_DGP_5000_5bin_BiasUniform_PosUniform"
+
+ptmle_asymp: 
+  dgp_path: "./data/DGP_5000_5bin_BiasUniform_PosUniform.rds"
+  reps: 1
+  nobs: 100000
+  method: "ptmle"
+  signature: "ptmle_asymp_DGP_5000_5bin_BiasUniform_PosUniform"
+
+tmle_asymp: 
+  dgp_path: "./data/DGP_5000_5bin_BiasUniform_PosUniform.rds"
+  reps: 1
+  nobs: 100000
+  method: "tmle"
+  signature: "tmle_asymp_DGP_5000_5bin_BiasUniform_PosUniform"
+
+gcomp_1000: 
+  dgp_path: "./data/DGP_5000_5bin_BiasUniform_PosUniform.rds"
+  reps: 500
+  nobs: 1000
+  method: "gcomp"
+  signature: "gcomp_1000_DGP_5000_5bin_BiasUniform_PosUniform"
+
+ptmle_1000: 
+  dgp_path: "./data/DGP_5000_5bin_BiasUniform_PosUniform.rds"
+  reps: 500
+  nobs: 1000
+  method: "ptmle"
+  signature: "ptmle_1000_DGP_5000_5bin_BiasUniform_PosUniform"
+
+tmle_1000: 
+  dgp_path: "./data/DGP_5000_5bin_BiasUniform_PosUniform.rds"
+  reps: 500
+  nobs: 1000
+  method: "tmle"
+  signature: "tmle_1000_DGP_5000_5bin_BiasUniform_PosUniform"
