@@ -20,9 +20,11 @@ task <- get(file = "./scripts/config.yml", config = args[1])
 # find matching result files
 files <- file.path("./data/res", list.files("./data/res", pattern = paste0("^", task$signature)))
 
+possibly_rbindlist <- purrr::possibly(rbindlist, NULL)
+
 out <- list()
 for (i in seq_along(files)) {
-  out[[i]] <- rbindlist(readRDS(files[i]))
+  out[[i]] <- possibly_rbindlist(readRDS(files[i]))
 }
 
 out <- rbindlist(out)

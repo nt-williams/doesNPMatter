@@ -8,9 +8,13 @@
 
 box::use(DGP = ../R/dgp)
 
-K <- 5000
-xs <- 5
-gamma <- 20
+# arguments are [K, xs, signature]
+#' @example 
+#' Rscript generate-dgp.R 5000 5 DGP_5000_5bin_BiasUniform_PosUniform.rds
+args <- commandArgs(trailingOnly = TRUE)
+
+K <- as.numeric(args[1])
+xs <- as.numeric(args[2])
 
 set.seed(214345)
 etas <- runif(K, min = -0.5, max = 0.5)
@@ -18,4 +22,4 @@ gammas <- rep(1000, K)
 
 dgps <- purrr::map2(etas, gammas, ~ DGP$dgp(xs, .x, .y))
 
-saveRDS(dgps, "./data/DGP_5000_5bin_BiasUniform_PosUniform.rds")
+saveRDS(dgps, here::here("data", args[3]))

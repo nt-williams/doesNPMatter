@@ -7,7 +7,7 @@ box::use(DGP = ./dgp, stats[...], data.table[...])
 #' 
 #' @export
 simulate <- function(dgp, n, reps = 1, 
-                     method = c("gcomp", "ptmle", "tmle", "cvtmle")) {
+                     method = c("gcomp", "ptmle", "tmle", "cvtmle", "bart")) {
   lookup <- DGP$dgp_lookup(dgp)
   estims <- estimate_ATE(lookup, n, reps, match.arg(method))
   data.table(
@@ -17,20 +17,23 @@ simulate <- function(dgp, n, reps = 1,
     truth = dgp$truth, 
     unadj = dgp$unadj, 
     gamma = dgp$gamma, 
-    msw = dgp$msw,
+    max_stabilized_weight = dgp$msw,
     confounding_bias = dgp$bias, 
-    estimator_bias = mean(estims) - dgp$truth
+    estimator_bias = mean(estims) - dgp$truth,
+    mean_squared_error = mean((estims - dgp$truth)^2),
+    variance = var(estims)
   )
 }
 
 estimate_ATE <- function(dgp, n, reps = 1, 
-                         method = c("gcomp", "ptmle", "tmle", "cvtmle")) {
+                         method = c("gcomp", "ptmle", "tmle", "cvtmle", "bart")) {
   .data <- replicate(reps, DGP$sample_dgp(dgp, n), simplify = FALSE)
   switch(match.arg(method), 
          gcomp = gcomputation(.data), 
          tmle = tmle(.data),
          ptmle = ptmle(.data),
-         cvtmle = cvtmle(.data))
+         cvtmle = cvtmle(.data), 
+         bart = bart(.data))
 }
 
 #' Estimate the ATE using G-computation with main-effects GLMs
@@ -91,6 +94,26 @@ tmle <- function(data) {
       Q.SL.library = SL_lib,
       g.SL.library = SL_lib,
     )$estimates$ATE$psi
+  })
+  unlist(out)
+}
+
+#' Estimate the ATE using BART
+#' 
+#' @param data Data created from \code{sample_dgp}.
+bart <- function(data) {
+  out <- lapply(data, function(d) {
+    nms_cnf <- grep("^cnf", names(d), value = TRUE)
+    fit <- bartCause::bartc(
+      d$y, 
+      d$trt, 
+      d[, nms_cnf, with = FALSE], 
+      estimand = "ate",
+      n.chains = 5L, 
+      n.burn = 250L, 
+      n.samples = 250L
+    )
+    summary(fit)$estimates$estimate
   })
   unlist(out)
 }
