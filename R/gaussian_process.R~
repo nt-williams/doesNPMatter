@@ -1,0 +1,22 @@
+## generate covariance matrix for points in `x` using given kernel function
+cov_matrix <- function(x, kernel_fn, ...) {
+    outer(x, x, function(a, b) kernel_fn(a, b, ...))
+}
+
+## given x coordinates, take N draws from kernel function at those points
+draw_samples <- function(x, N, seed = 1, kernel_fn, ...) {
+    Y <- matrix(NA, nrow = length(x), ncol = N)
+    set.seed(seed)
+    for (n in 1:N) {
+        K <- cov_matrix(x, kernel_fn, ...)
+        Y[, n] <- mvrnorm(1, mu = rep(0, times = length(x)), Sigma = K)
+    }
+    Y
+}
+
+se_kernel <- function(x, y, sigma = 1, length = 1) {
+    sigma^2 * exp(- sum((x - y)^2) / (2 * length^2))
+}
+
+x1 <- seq(0, 1, length.out = 101)
+x <- expand.grid(x1, x1)
