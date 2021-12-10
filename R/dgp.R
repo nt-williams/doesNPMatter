@@ -39,42 +39,6 @@ scenarios <- scenarios %>%
            rho = ifelse(n_num == 0, 0, rho)) %>%
     unique()
 
-
-dgp <- function(n_bin = 2, n_num = 2, inter_order = 2, hte = TRUE, conf_bias = 0.01,
-                pos_bound = 100, npoints = 50, eta = 1, rho = 1, tol = 0.01) {
-
-    k <- sum(sapply(0:inter_order, function(i)choose(n_bin, i)))
-
-    if(n_num > 0) {
-        ## Design matrices
-        xnum_vals <- seq(0, 1, length.out = npoints)
-
-        xx_num <- as.matrix(expand.grid(replicate(n_num, xnum_vals, simplify = FALSE)))
-        colnames(xx_num) <- paste0('x_num', 1:ncol(xx_num))
-
-        ## Draw Gaussian process for treatment
-        Sigma <- cov_matrix(xx_num, se_kernel, eta = eta, rho = rho)
-        gauss_process <- plogis(draw_samples(xx_num, k, Sigma = Sigma))
-        colnames(gauss_process) <- paste0('x_funs', 1:k)
-
-        xbin_vals <- expand.grid(replicate(n_bin, 0:1, simplify = FALSE))
-        names(xbin_vals) <- paste0('x_bin', 1:ncol(xbin_vals))
-
-        xx_bin <- model.matrix(formula(paste0('~ .^', inter_order)), data = xbin_vals)
-        card_x <- 2^n_bin * npoints^n_num
-
-        ## Matrix to generate data with interactions and Gaussian processes
-        xx <- merge(xx_bin, gauss_process)
-        xx[, grep("^x_funs[0-9]+$", colnames(xx))] <- xx[, 1:k] * xx[, grep("^x_funs[0-9]+$", colnames(xx))]
-        xx <- as.matrix(xx)
-
-        ## Code to plot a gaussian process function, leaving here for now just to have it somewhere
-        plot(range(xx_num), range(gauss_process), xlab = "x", ylab = "y", type = "n",
-             main = "SE kernel, length = 0.2")
-        for (n in 1:ncol(gauss_process)) {
-            lines(xx_num, gauss_process[, n], col = n, lwd = 1.5)
-        }
-
 dgp <- function(n_bin = 2, n_num = 2, inter_order = 2, hte = TRUE, conf_bias = 0.01,
                 pos_bound = 100, npoints = 50, eta = 1, rho = 1, tol = 0.01) {
 
