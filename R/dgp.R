@@ -4,7 +4,8 @@ box::use(data.table[...], utils[flush.console], stats[weighted.mean])
 #'
 #' @param xs The number of binary covariates. Used to calculate k,
 #'   the cardinality of the support of the covariates.
-#' @param eta Confounding bias.
+#' @param eta larger values mean larger deviations from linear model
+#' @param rho smaller values mean smoother functions
 #' @param pos_bound Bound on the maximum stabilized weights.
 #' @param tol Tolerance around constructing a DGP with bias conf_bias.
 #'
@@ -12,16 +13,37 @@ box::use(data.table[...], utils[flush.console], stats[weighted.mean])
 #'
 #' @author Caleb Miles
 
-## Code to plot a gaussian process function, leaving here for now just to have it somewhere
-## plot(range(xx_num), range(gauss_process), xlab = "x", ylab = "y", type = "n",
-##      main = "SE kernel, length = 0.2")
-## for (n in 1:ncol(gauss_process)) {
-##     lines(xx_num, gauss_process[, n], col = n, lwd = 1.5)
-## }
+## as eta -> 0 rho does not matter and the functions are logit-linear
+## as rho -> 0 and eta is large there is little effect of the covariates on the
+## outcome since the functions are practically constant
+## scenarios:
+## - eta = .1, rho = .1
+## - eta = 10, rho = .1
+## - eta = .1, rho = 10
+## - eta = 10, rho = 10
+## hte in (T, F)
+## n_bin in (3, 10)
+## n_num in (0, 2)
+## inter_order in (1, 2, 3)
+## conf_bias in (0.01, 0.1, 0.3)
+## pos_bound in (10, 100, 1000)
+## n in (100, 1000, 5000)
 
-dgp <- function(n_bin = 2, n_num = 2, conf_bias, pos_bound, npoints = 50, eta, rho, tol = 0.01) {
+library(tidyverse)
+scenarios <- expand.grid(eta = c(.1, 10), rho = c(.1, 10), hte = c(TRUE, FALSE),
+                         n_bin = c(3, 10), n_num = c(0, 2), inter_order = 1:3,
+                         conf_bias = c(.01, .1, .3), pos_bound = c(10, 100, 1000),
+                         n = c(100, 1000, 5000))
+scenarios <- scenarios %>%
+    mutate(eta = ifelse(n_num == 0, 0, eta),
+           rho = ifelse(n_num == 0, 0, rho)) %>%
+    unique()
 
-    k <- 2^n_bin
+
+dgp <- function(n_bin = 2, n_num = 2, inter_order = 2, hte = TRUE, conf_bias = 0.01,
+                pos_bound = 100, npoints = 50, eta = 1, rho = 1, tol = 0.01) {
+
+    k <- sum(sapply(0:inter_order, function(i)choose(n_bin, i)))
 
     if(n_num > 0) {
         ## Design matrices
@@ -31,20 +53,63 @@ dgp <- function(n_bin = 2, n_num = 2, conf_bias, pos_bound, npoints = 50, eta, r
         colnames(xx_num) <- paste0('x_num', 1:ncol(xx_num))
 
         ## Draw Gaussian process for treatment
-        Sigma <- cov_matrix(xx_num, se_kernel, rho = rho, eta = eta)
+        Sigma <- cov_matrix(xx_num, se_kernel, eta = eta, rho = rho)
         gauss_process <- plogis(draw_samples(xx_num, k, Sigma = Sigma))
         colnames(gauss_process) <- paste0('x_funs', 1:k)
 
         xbin_vals <- expand.grid(replicate(n_bin, 0:1, simplify = FALSE))
         names(xbin_vals) <- paste0('x_bin', 1:ncol(xbin_vals))
 
-        xx_bin <- model.matrix(formula(paste0('~ .^', n_bin)), data = xbin_vals)
-        card_x <- k * npoints^n_num
+        xx_bin <- model.matrix(formula(paste0('~ .^', inter_order)), data = xbin_vals)
+        card_x <- 2^n_bin * npoints^n_num
 
         ## Matrix to generate data with interactions and Gaussian processes
         xx <- merge(xx_bin, gauss_process)
-        xx[, grep("^x_funs[1-9]$", colnames(xx))] <- xx[, 1:k] * xx[, grep("^x_funs[1-9]$", colnames(xx))]
+        xx[, grep("^x_funs[0-9]+$", colnames(xx))] <- xx[, 1:k] * xx[, grep("^x_funs[0-9]+$", colnames(xx))]
         xx <- as.matrix(xx)
+
+        ## Code to plot a gaussian process function, leaving here for now just to have it somewhere
+        plot(range(xx_num), range(gauss_process), xlab = "x", ylab = "y", type = "n",
+             main = "SE kernel, length = 0.2")
+        for (n in 1:ncol(gauss_process)) {
+            lines(xx_num, gauss_process[, n], col = n, lwd = 1.5)
+        }
+
+dgp <- function(n_bin = 2, n_num = 2, inter_order = 2, hte = TRUE, conf_bias = 0.01,
+                pos_bound = 100, npoints = 50, eta = 1, rho = 1, tol = 0.01) {
+
+    k <- sum(sapply(0:inter_order, function(i)choose(n_bin, i)))
+
+    if(n_num > 0) {
+        ## Design matrices
+        xnum_vals <- seq(0, 1, length.out = npoints)
+
+        xx_num <- as.matrix(expand.grid(replicate(n_num, xnum_vals, simplify = FALSE)))
+        colnames(xx_num) <- paste0('x_num', 1:ncol(xx_num))
+
+        ## Draw Gaussian process for treatment
+        Sigma <- cov_matrix(xx_num, se_kernel, eta = eta, rho = rho)
+        gauss_process <- plogis(draw_samples(xx_num, k, Sigma = Sigma))
+        colnames(gauss_process) <- paste0('x_funs', 1:k)
+
+        xbin_vals <- expand.grid(replicate(n_bin, 0:1, simplify = FALSE))
+        names(xbin_vals) <- paste0('x_bin', 1:ncol(xbin_vals))
+
+        xx_bin <- model.matrix(formula(paste0('~ .^', inter_order)), data = xbin_vals)
+        card_x <- 2^n_bin * npoints^n_num
+
+        ## Matrix to generate data with interactions and Gaussian processes
+        xx <- merge(xx_bin, gauss_process)
+        xx[, grep("^x_funs[0-9]+$", colnames(xx))] <- xx[, 1:k] * xx[, grep("^x_funs[0-9]+$", colnames(xx))]
+        xx <- as.matrix(xx)
+
+        ## Code to plot a gaussian process function, leaving here for now just to have it somewhere
+        plot(range(xx_num), range(gauss_process), xlab = "x", ylab = "y", type = "n",
+             main = "SE kernel, length = 0.2")
+        for (n in 1:ncol(gauss_process)) {
+            lines(xx_num, gauss_process[, n], col = n, lwd = 1.5)
+        }
+
 
     } else {
 
@@ -53,7 +118,7 @@ dgp <- function(n_bin = 2, n_num = 2, conf_bias, pos_bound, npoints = 50, eta, r
 
         xx_bin <- model.matrix(formula(paste0('~ .^', n_bin)), data = xbin_vals)
 
-        card_x <- k
+        card_x <- 2^n_bin
 
         ## Matrix to generate data with interactions and Gaussian processes
         xx <- xx_bin
@@ -68,7 +133,7 @@ dgp <- function(n_bin = 2, n_num = 2, conf_bias, pos_bound, npoints = 50, eta, r
 
         px <- DirichletReg::rdirichlet(1, rep(1:card_x))[1, ] # Sampling P(X=x)
 
-        ## Sampling coefficients in a linear saturated model for P(T=1|X=x)
+        ## Sampling coefficients in a linear model for P(T=1|X=x)
         constraint_matrix <- rbind(
             ## Probability constraints (0,1)
             - xx, xx,
@@ -107,7 +172,17 @@ dgp <- function(n_bin = 2, n_num = 2, conf_bias, pos_bound, npoints = 50, eta, r
     if (search == TRUE) return("Failed!")
 
     ## Matrix to return with only basic covariates
-    x_ret <- xx_bin[, grep("^x_bin[1-9]$", colnames(xx_bin))]
+    x_ret <- xx_bin[, grep("^x_bin[0-9]+$", colnames(xx_bin))]
+
+    if(hte) {
+        formY <- formula(paste0('~ t * (. - t)^', inter_order))
+        l <- 2 * k
+        expr <- "^x_funs[0-9]+$)"
+    } else {
+        formY <- formula(paste0('~ t + (. - t)^', inter_order))
+        l <- k
+        expr <- "(^x_funs[0-9]+$)|(\\bt\\b)"
+    }
 
     if(n_num > 0) {
 
@@ -117,16 +192,18 @@ dgp <- function(n_bin = 2, n_num = 2, conf_bias, pos_bound, npoints = 50, eta, r
         x_ret[x_ret[, 't'] == 0, 'pt'] <- 1 - x_ret[x_ret[, 't'] == 0, 'pt']
 
         ## Gaussian process for outcome model
-        gauss_process <- plogis(draw_samples(xx_num, 2 * k, Sigma = Sigma))
-        colnames(gauss_process) <- paste0('x_funs', 1:(2 * k))
+        gauss_process <- plogis(draw_samples(xx_num, l, Sigma = Sigma))
+        colnames(gauss_process) <- paste0('x_funs', 1:l)
         tmp <- merge(xbin_vals, gauss_process)
         tmp <- cbind(rbind(tmp, tmp), t = c(rep(0, nrow(tmp)), rep(1, nrow(tmp))))
         ## Design matrix
-        xxt_bin <- model.matrix(formula(paste0('~ .^', n_bin + 1)),
-                            data = tmp[, c(colnames(tmp)[grep("^x_bin[1-9]$", colnames(tmp))], 't')])
+        xxt_bin <- model.matrix(formY,
+                            data = tmp[, c(colnames(tmp)[grep("^x_bin[0-9]+$", colnames(tmp))], 't')])
 
-        xxt <- cbind(xxt_bin, tmp[, grep("^x_funs[1-9]$", colnames(tmp))])
-        xxt[, grep("^x_funs[1-9]$", colnames(xxt))] <- xxt[, 1:(2 * k)] * xxt[, grep("^x_funs[1-9]$", colnames(xxt))]
+        xxt <- cbind(xxt_bin, tmp[, grep("^x_funs[0-9]+$", colnames(tmp))])
+
+        xxt[, grep("^x_funs[0-9]+$", colnames(xxt))] <-
+                xxt[, -grep(expr, colnames(xxt))] * xxt[, grep("^x_funs[0-9]+$", colnames(xxt))]
 
     } else {
 
@@ -134,7 +211,7 @@ dgp <- function(n_bin = 2, n_num = 2, conf_bias, pos_bound, npoints = 50, eta, r
         x_ret <- cbind(rbind(x_ret, x_ret), t = c(rep(0, nrow(x_ret)), rep(1, nrow(x_ret))))
         x_ret[x_ret[, 't'] == 0, 'pt'] <- 1 - x_ret[x_ret[, 't'] == 0, 'pt']
         xxt <- model.matrix(formula(paste0('~ .^', n_bin + 1)),
-                                data = x_ret[, c(colnames(x_ret)[grep("^x_bin[1-9]$", colnames(x_ret))], 't')])
+                                data = x_ret[, c(colnames(x_ret)[grep("^x_bin[0-9]+$", colnames(x_ret))], 't')])
 
     }
 
