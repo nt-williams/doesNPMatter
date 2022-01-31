@@ -1,29 +1,32 @@
 # Nick Williams
-# Research Biostatistician 
-# Department of Population Health Sciences 
+# Research Biostatistician
+# Department of Population Health Sciences
 # Weill Cornell Medicine
+
+# This script is intended to be called with `Rscript` from the command line!
 
 .libPaths("/home/niw4001/R_local")
 
-setwd("/home/niw4001/doesNPMatter")
+setwd(here::here())
 
-devtools::load_all()
+box::use(config[get], data.table[...])
 
+# capture the name of the configuration passed to Rscript as a parameter
 args <- commandArgs(trailingOnly = TRUE)
 
-size <- args[1]
-context <- args[2]
-binary_cnf <- as.numeric(args[3])
-cont_cnf <- as.numeric(args[4])
-randomized <- as.logical(args[5])
-parametric <- as.logical(args[6])
-crossfit <- as.logical(args[7])
+# load config file
+task <- get(file = "./scripts/config.yml", config = args[1])
 
-regex <- glue::glue("{size}_[[:digit:]]+_{binary_cnf}_{cont_cnf}_{randomized}_{parametric}_{crossfit}*")
-op <- glue::glue("{context}_{size}_{binary_cnf}_{cont_cnf}_{randomized}_{parametric}_{crossfit}.rds")
+# find matching result files
+files <- file.path("./data/res", list.files("./data/res", pattern = paste0("^", task$signature)))
 
-out <- read_results(context, regex)
+possibly_rbindlist <- purrr::possibly(rbindlist, NULL)
 
-saveRDS(out, paste0("/home/niw4001/doesNPMatter/data/res/", op))
+out <- list()
+for (i in seq_along(files)) {
+  out[[i]] <- possibly_rbindlist(readRDS(files[i]))
+}
 
-quit("no")
+out <- rbindlist(out)
+
+saveRDS(out, file.path("./data/extracted", paste0(task$signature, ".rds")))
