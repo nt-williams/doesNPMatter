@@ -29,7 +29,6 @@ dgp <- function(n_bin = 2, n_num = 2, inter_order = 2, hte = TRUE, conf_bias = 0
                 pos_bound = 100, npoints = 50, eta = 1, rho = 1, tol = 0.01) {
   
   k <- sum(sapply(0:inter_order, function(i) choose(n_bin, i)))
-  
   if (n_num > 0) {
     # Design matrices
     xnum_vals <- seq(0, 1, length.out = npoints)
@@ -45,7 +44,12 @@ dgp <- function(n_bin = 2, n_num = 2, inter_order = 2, hte = TRUE, conf_bias = 0
     xbin_vals <- expand.grid(replicate(n_bin, 0:1, simplify = FALSE))
     names(xbin_vals) <- paste0('x_bin', 1:ncol(xbin_vals))
     
-    xx_bin <- model.matrix(formula(paste0('~ .^', inter_order)), data = xbin_vals)
+    if (inter_order > 1) {
+      xx_bin <- model.matrix(formula(paste0('~ .^', inter_order)), data = xbin_vals)
+    } else {
+      xx_bin <- model.matrix(~ ., data = xbin_vals)
+    }
+
     card_x <- 2^n_bin * npoints^n_num
     
     # Matrix to generate data with interactions and Gaussian processes
@@ -62,7 +66,13 @@ dgp <- function(n_bin = 2, n_num = 2, inter_order = 2, hte = TRUE, conf_bias = 0
   } else {
     xbin_vals <- expand.grid(replicate(n_bin, 0:1, simplify = FALSE))
     names(xbin_vals) <- paste0('x_bin', 1:ncol(xbin_vals))
-    xx_bin <- model.matrix(formula(paste0('~ .^', n_bin)), data = xbin_vals)
+    
+    if (inter_order > 1) {
+      xx_bin <- model.matrix(formula(paste0('~ .^', inter_order)), data = xbin_vals)
+    } else {
+      xx_bin <- model.matrix(~ ., data = xbin_vals)
+    }
+    
     card_x <- 2^n_bin
     
     # Matrix to generate data with interactions and Gaussian processes
@@ -120,16 +130,22 @@ dgp <- function(n_bin = 2, n_num = 2, inter_order = 2, hte = TRUE, conf_bias = 0
   # Matrix to return with only basic covariates
   x_ret <- xx_bin[, grep("^x_bin[0-9]+$", colnames(xx_bin))]
   
-  if (hte) {
+  if (inter_order > 1) {
     formY <- formula(paste0('~ t * (. - t)^', inter_order))
+  } else {
+    formY <- ~ t * (. - t)
+  }
+  
+  if (hte) {
+    #formY <- formula(paste0('~ t * (. - t)^', inter_order))
     l <- 2 * k
     expr <- "(^x_funs[0-9]+$)"
   } else {
-    formY <- formula(paste0('~ t + (. - t)^', inter_order))
+    #formY <- formula(paste0('~ t + (. - t)^', inter_order))
     l <- k
     expr <- "(^x_funs[0-9]+$)|(\\bt\\b)"
   }
-  
+
   if (n_num > 0) {
     x_ret <- merge(xbin_vals, xx_num)
     x_ret <- cbind(x_ret, pt, px)
@@ -152,9 +168,11 @@ dgp <- function(n_bin = 2, n_num = 2, inter_order = 2, hte = TRUE, conf_bias = 0
       xxt[, -grep(expr, colnames(xxt))] * xxt[, grep("^x_funs[0-9]+$", colnames(xxt))]
     
   } else {
+    colnames(pt) <- "pt"
     x_ret <- cbind(x_ret, pt, px)
     x_ret <- cbind(rbind(x_ret, x_ret), t = c(rep(0, nrow(x_ret)), rep(1, nrow(x_ret))))
     x_ret[x_ret[, 't'] == 0, 'pt'] <- 1 - x_ret[x_ret[, 't'] == 0, 'pt']
+    x_ret <- as.data.frame(x_ret)
     xxt <- model.matrix(
       formula(paste0('~ .^', n_bin + 1)),
       data = x_ret[, c(colnames(x_ret)[grep("^x_bin[0-9]+$", colnames(x_ret))], 't')]
@@ -195,6 +213,9 @@ dgp <- function(n_bin = 2, n_num = 2, inter_order = 2, hte = TRUE, conf_bias = 0
     truth = truth[1],
     unadj = unadj[1],
     bias = unadj[1] - truth[1],
-    pos_bound = pos_bound
+    pos_bound = pos_bound, 
+    eta = eta, 
+    rho = rho, 
+    inter_order = inter_order
   )
 }
