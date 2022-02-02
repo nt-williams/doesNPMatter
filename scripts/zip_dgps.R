@@ -1,5 +1,3 @@
-setwd("doesNPMatter")
-
 zip_dgps <- function(dir) {
   files <- list.files(file.path("data", "dgps", dir))
   zip(file.path("data", "dgps", paste0(dir, ".zip")), 
