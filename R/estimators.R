@@ -1,6 +1,6 @@
 tmle <- function(data, V, learners) {
   t_1 <- lmtp::lmtp_tmle(
-    data, "t", "y", 
+    as.data.frame(data), "t", "y", 
     grep("^x_", names(data), value = TRUE),
     shift = lmtp::static_binary_on, 
     learners_outcome = learners, 
@@ -9,7 +9,7 @@ tmle <- function(data, V, learners) {
   )
   
   t_0 <- lmtp::lmtp_tmle(
-    data, "t", "y", 
+    as.data.frame(data), "t", "y", 
     grep("^x_", names(data), value = TRUE),
     shift = lmtp::static_binary_off,
     learners_outcome = learners, 

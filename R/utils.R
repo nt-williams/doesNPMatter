@@ -8,5 +8,3 @@ read_zipped_dgp <- function(dir_name, id) {
     close(con)
   })
 }
-
-# read_zip("DGP_3_0_1_FALSE", 1)
