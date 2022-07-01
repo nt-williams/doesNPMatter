@@ -85,7 +85,7 @@ dgp <- function(n_bin = 2, n_num = 2, inter_order = 2, hte = TRUE, conf_bias = 0
   
   while (search && iter < 1000) {
     # Sampling P(X=x)
-    px <- DirichletReg::rdirichlet(1, rep(1:card_x))[1, ]
+    px <- DirichletReg::rdirichlet(1, rep(1, card_x))[1, ]
     
     # Sampling coefficients in a linear model for P(T=1|X=x)
     constraint_matrix <- rbind(
