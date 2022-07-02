@@ -130,18 +130,20 @@ dgp <- function(n_bin = 2, n_num = 2, inter_order = 2, hte = TRUE, conf_bias = 0
   # Matrix to return with only basic covariates
   x_ret <- xx_bin[, grep("^x_bin[0-9]+$", colnames(xx_bin))]
   
-  if (inter_order > 1) {
-    formY <- formula(paste0('~ t * (. - t)^', inter_order))
-  } else {
-    formY <- ~ t * (. - t)
-  }
-  
   if (hte) {
-    #formY <- formula(paste0('~ t * (. - t)^', inter_order))
-    l <- 2 * k
-    expr <- "(^x_funs[0-9]+$)"
+      if (inter_order > 1) {
+          formY <- formula(paste0('~ t * (. - t)^', inter_order))
+      } else {
+          formY <- ~ t * (. - t)
+      }
+      l <- 2 * k
+      expr <- "(^x_funs[0-9]+$)"
   } else {
-    #formY <- formula(paste0('~ t + (. - t)^', inter_order))
+      if (inter_order > 1) {
+          formY <- formula(paste0('~ t + (. - t)^', inter_order))
+      } else {
+          formY <- ~ t + (. - t)
+      }
     l <- k
     expr <- "(^x_funs[0-9]+$)|(\\bt\\b)"
   }
