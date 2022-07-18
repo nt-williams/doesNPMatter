@@ -8,3 +8,8 @@ read_zipped_dgp <- function(dir_name, id) {
     close(con)
   })
 }
+
+read_dgp <- function(dir_name, id) {
+  to_read <- file.path("data/dgps", dir_name, paste0(id, ".rds"))
+  readRDS(to_read)
+}

@@ -13,10 +13,11 @@ read_zip <- function(tar) {
   })
 }
 
-dgp <- "DGP_5_1_3_FALSE"
+dgp <- "DGP_5_1_2_TRUE"
 
-DGPs <- map_dfr(1:250, function(id) {
-  meta <- read_zipped_dgp(dgp, id)
+DGPs <- map_dfr(1:500, function(id) {
+  meta <- try(read_dgp(dgp, id))
+  if (inherits(meta, "try-error")) return(NULL)
   data.frame(
     id = id,
     truth = meta$truth, 
@@ -27,7 +28,7 @@ DGPs <- map_dfr(1:250, function(id) {
 })
 
 res <-
-  read_zip(glue::glue("data/sims/sim_{dgp}.zip") )|> 
+  read_zip(glue::glue("data/sims/sim_{dgp}.zip")) |> 
   bind_rows() |> 
   left_join(DGPs)
 
