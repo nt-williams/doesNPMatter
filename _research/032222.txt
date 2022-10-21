@@ -1,0 +1,3 @@
+- Always 1 numeric variable
+- Only vary hte for the case of 5 binary covariates
+- Only run the 6 most complex DGPs

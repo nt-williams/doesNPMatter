@@ -1,7 +1,11 @@
 source("R/dgp.R")
 source("R/estimators.R")
 source("R/utils.R")
-library(lmtp)
+source("R/tmle_mlr3.R")
+
+library(mlr3verse)
+
+# library(lmtp)
 
 # change depending on cluster...
 id <- Sys.getenv("SGE_TASK_ID")
@@ -9,11 +13,11 @@ if (id == "undefined" || id == "") id <- 1
 
 args <- commandArgs(trailingOnly = TRUE)
 
-# FOR TESTING:
-args <- list(
-  dgp = "DGP_5_1_1_FALSE",
-  K = 1
-)
+# # FOR TESTING:
+# args <- list(
+#   dgp = "DGP_5_1_3_FALSE",
+#   K = 1
+# )
 
 DGP <- try(read_dgp(args[[1]], as.numeric(id)))
 
@@ -29,7 +33,7 @@ ans <- purrr::map_dfr(1:as.numeric(args[[2]]), function(k) {
     #   metalearner = sl3::make_learner(sl3::Lrnr_nnls, convex = TRUE)
     # )
     
-    Sl <- c("SL.glm", "SL.sal", "SL.earth")
+    # Sl <- c("SL.glm", "SL.sal", "SL.earth")
     
     # if (n == 1000) {
     #   V <- 2
@@ -37,7 +41,7 @@ ans <- purrr::map_dfr(1:as.numeric(args[[2]]), function(k) {
     #   V <- 1
     # }
     
-    V <- 1
+    # V <- 1
     
     data.frame(
       dgp = args[[1]], 
@@ -46,7 +50,8 @@ ans <- purrr::map_dfr(1:as.numeric(args[[2]]), function(k) {
       cbps = cbps(dat),
       gcomp = gcomp(dat),
       bart = bart(dat),
-      cvtmle = tmle(dat, V, Sl)
+      tmle = tmle_mlr3(dat)
+      #cvtmle = tmle(dat, V, Sl)
     )
   })
 })

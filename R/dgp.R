@@ -205,8 +205,8 @@ dgp <- function(n_bin = 2, n_num = 2, inter_order = 2, hte = TRUE, conf_bias = 0
   unadj <- py1[i1] %*% (px * pt) / as.numeric(px %*% pt) - py1[i0] %*% (px * (1 - pt)) / as.numeric(px %*% (1 - pt))
   x_ret <- cbind(rbind(x_ret, x_ret), y = c(rep(1, nrow(x_ret)), rep(0, nrow(x_ret))), py = c(py1, 1 - py1))
   x_ret$p <-  x_ret$px * x_ret$pt * x_ret$py
-  x_ret$px <- NULL
-  x_ret$pt <- NULL
+  # x_ret$px <- NULL
+  # x_ret$pt <- NULL
   x_ret$py <- NULL
   
   list(
