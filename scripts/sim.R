@@ -13,11 +13,11 @@ if (id == "undefined" || id == "") id <- 1
 
 args <- commandArgs(trailingOnly = TRUE)
 
-# # FOR TESTING:
-# args <- list(
-#   dgp = "DGP_5_1_3_FALSE",
-#   K = 1
-# )
+# FOR TESTING:
+args <- list(
+  dgp = "DGP_5_1_3_FALSE",
+  K = 1
+)
 
 DGP <- try(read_dgp(args[[1]], as.numeric(id)))
 

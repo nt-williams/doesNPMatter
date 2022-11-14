@@ -20,7 +20,7 @@ draw_samples <- function(x, N, Sigma) {
 }
 
 se_kernel <- function(x, y, eta = 1, rho = 1) {
-  eta * exp(- rho * sum((x - y)^2))
+  eta * exp(-rho * sum((x - y)^2))
 }
 
 #' @param eta larger values mean larger deviations from linear model
@@ -90,11 +90,9 @@ dgp <- function(n_bin = 2, n_num = 2, inter_order = 2, hte = TRUE, conf_bias = 0
     # Sampling coefficients in a linear model for P(T=1|X=x)
     constraint_matrix <- rbind(
       # Probability constraints (0,1)
-      - xx, xx,
-      
+      -xx, xx,
       # Constraints on P(T=1)/P(T=1|X=x)
       matrix(rep(px, card_x), card_x, card_x, byrow = TRUE) %*% xx - pos_bound * xx,
-      
       # Constraints on P(T=0)/P(T=0|X=x)
       pos_bound * xx - matrix(rep(px, card_x), card_x, card_x, byrow = TRUE) %*% xx
     )
