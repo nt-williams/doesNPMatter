@@ -20,7 +20,7 @@ draw_samples <- function(x, N, Sigma) {
 }
 
 se_kernel <- function(x, y, eta = 1, rho = 1) {
-  eta * exp(- rho * sum((x - y)^2))
+  eta * exp(-rho * sum((x - y)^2))
 }
 
 #' @param eta larger values mean larger deviations from linear model
@@ -90,11 +90,9 @@ dgp <- function(n_bin = 2, n_num = 2, inter_order = 2, hte = TRUE, conf_bias = 0
     # Sampling coefficients in a linear model for P(T=1|X=x)
     constraint_matrix <- rbind(
       # Probability constraints (0,1)
-      - xx, xx,
-      
+      -xx, xx,
       # Constraints on P(T=1)/P(T=1|X=x)
       matrix(rep(px, card_x), card_x, card_x, byrow = TRUE) %*% xx - pos_bound * xx,
-      
       # Constraints on P(T=0)/P(T=0|X=x)
       pos_bound * xx - matrix(rep(px, card_x), card_x, card_x, byrow = TRUE) %*% xx
     )
@@ -205,8 +203,8 @@ dgp <- function(n_bin = 2, n_num = 2, inter_order = 2, hte = TRUE, conf_bias = 0
   unadj <- py1[i1] %*% (px * pt) / as.numeric(px %*% pt) - py1[i0] %*% (px * (1 - pt)) / as.numeric(px %*% (1 - pt))
   x_ret <- cbind(rbind(x_ret, x_ret), y = c(rep(1, nrow(x_ret)), rep(0, nrow(x_ret))), py = c(py1, 1 - py1))
   x_ret$p <-  x_ret$px * x_ret$pt * x_ret$py
-  x_ret$px <- NULL
-  x_ret$pt <- NULL
+  # x_ret$px <- NULL
+  # x_ret$pt <- NULL
   x_ret$py <- NULL
   
   list(
