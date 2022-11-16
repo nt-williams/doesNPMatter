@@ -9,11 +9,18 @@ source("R/utils.R")
 
 dgp <- "DGP_5_1_3_TRUE"
 res <- readRDS(glue("data/sims/res_{dgp}.rds"))
+res2 <- readRDS(glue("data/sims/res_cvtmle_{dgp}.rds"))
 
 bias <- group_by(res, id, n) |> 
   summarise(across(ends_with("psi"), \(x) mean(x - truth)))
 
+bias2 <- group_by(res2, id, n) |> 
+  summarise(across(ends_with("psi"), \(x) mean(x - truth)))
+
 mse <- group_by(res, id, n) |> 
+  summarise(across(ends_with("psi"), \(x) mean((x - truth)^2)))
+
+mse2 <- group_by(res2, id, n) |> 
   summarise(across(ends_with("psi"), \(x) mean((x - truth)^2)))
 
 quantile_at_x <- function(vals, x) {
@@ -31,7 +38,7 @@ height <- width / 3
 agg_png(glue("figs/bias_{dgp}.png"), width = width, height = height, units = "in", res = 400)
 print({
   map2(c(100, 500, 1000), c("N = 100", "500", "1000"),
-       \(N, sub) ecdf_plot(filter(bias, n == N), "|Bias|", sub, c(0, 0.25))) |>
+       \(N, sub) ecdf_plot(filter(bias, n == N), filter(bias2, n == N), "|Bias|", sub, c(0, 0.25))) |>
     reduce(`+`)
 })
 dev.off()
@@ -39,7 +46,7 @@ dev.off()
 agg_png(glue("figs/mse_{dgp}.png"), width = width, height = height, units = "in", res = 400)
 print({
   map2(c(100, 500, 1000), c("N = 100", "500", "1000"),
-       \(N, sub) ecdf_plot(filter(mse, n == N), "MSE", sub, c(0, 0.06), 0.01)) |>
+       \(N, sub) ecdf_plot(filter(mse, n == N), filter(mse2, n == N), "MSE", sub, c(0, 0.06), 0.01)) |>
     reduce(`+`)
 })
 dev.off()
@@ -67,11 +74,33 @@ mse <- left_join(mse, {
     ungroup()
 })
 
+res2 <- group_by(res2, id) |> 
+  nest(thetas = cvtmle.psi:cvtmle.conf.high) |> 
+  mutate(positivity_violation = 
+           cut(max_ipw, 
+               c(0, 50, 100, 2000), 
+               labels = c("minimal", "moderate", "severe"), 
+               include.lowest = TRUE)) |> 
+  unnest(thetas)
+
+bias2 <- left_join(bias2, {
+  select(res2, id, positivity_violation) |>
+    distinct() |>
+    ungroup()
+})
+
+mse2 <- left_join(mse2, {
+  select(res2, id, positivity_violation) |> 
+    distinct() |> 
+    ungroup()
+})
+
 agg_png(glue("figs/bias_positivity_{dgp}.png"), width = width, height = height, units = "in", res = 400)
 print({
   map2(c("minimal", "moderate", "severe"),
        c("Pos. violation: minimal", "moderate", "severe"),
        \(pos, sub) ecdf_plot(filter(bias, n == 1000, positivity_violation == pos),
+                             filter(bias2, positivity_violation == pos),
                              "|Bias|", sub, c(0, 0.25))) |>
     reduce(`+`)
 })
@@ -82,6 +111,7 @@ print({
   map2(c("minimal", "moderate", "severe"), 
        c("Pos. violation: minimal", "moderate", "severe"),
        \(pos, sub) ecdf_plot(filter(mse, n == 1000, positivity_violation == pos), 
+                             filter(mse2, positivity_violation == pos),
                              "MSE", sub, c(0, 0.05), 0.01)) |> 
     reduce(`+`) 
 })

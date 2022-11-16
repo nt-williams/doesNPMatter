@@ -58,7 +58,7 @@ pt_to_mm <- function(pt) {
   pt / ggplot2::.pt
 }
 
-ecdf_plot <- function(data, xlab, subtitle, xlim, seq = 0.05) {
+ecdf_plot <- function(data, data2, xlab, subtitle, xlim, seq = 0.05) {
   pts <- 0.75
   ts <- 7
   ggplot(data) +
@@ -70,9 +70,15 @@ ecdf_plot <- function(data, xlab, subtitle, xlim, seq = 0.05) {
               stat = 'ecdf', alpha = 0.65, size = pt_to_mm(0.9)) + 
     geom_line(aes(x = abs(tmle.psi), y = 1 - ..y.., color = "#C03221"), 
               stat = 'ecdf', alpha = 0.65, size = pt_to_mm(0.9)) + 
+    {
+      if (nrow(data2) > 0) {
+        geom_line(data = data2, aes(x = abs(cvtmle.psi), y = 1 - ..y.., color = "#B47EB3"), 
+                  stat = 'ecdf', alpha = 0.65, size = pt_to_mm(0.9))
+      }
+    } + 
     scale_color_identity(
-      breaks = c("#271F30", "#548C64", "#D5A021", "#C03221"),
-      labels = c("IPTW", "G-comp.", "BART", "TMLE"),
+      breaks = c("#271F30", "#548C64", "#D5A021", "#C03221", "#B47EB3"),
+      labels = c("IPTW-CBPS", "G-comp.", "BART", "TMLE", "CV-TMLE"),
       guide = "legend"
     ) + 
     labs(
@@ -88,7 +94,7 @@ ecdf_plot <- function(data, xlab, subtitle, xlim, seq = 0.05) {
     scale_y_continuous(expand = c(0.01, 0)) + 
     theme(text = element_text(size = ts),
           legend.position = {
-            if (subtitle == "1000" || subtitle == "severe") c(0.85, 0.9)
+            if (subtitle == "1000" || subtitle == "severe") c(0.76, 0.9)
             else "none"
           },
           legend.background = element_rect(fill = "white",
