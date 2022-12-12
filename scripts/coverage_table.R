@@ -10,8 +10,8 @@ agg_covr_main <- function(dgp) {
   res1 <- readRDS(glue("data/sims/coverage_{dgp}.rds"))
   res2 <- readRDS(glue("data/sims/coverage_cvtmle_{dgp}.rds"))
   
-  filter(res1, n == 1000) |>
-    left_join(select(res2, id, cvtmle)) |> 
+  left_join(res1, select(res2, id, n, cvtmle)) |> 
+    group_by(n) |> 
     summarise(across(cbps:cvtmle, list(median = ~ median(.x, na.rm = TRUE), 
                                        lower = ~ quantile(.x, 0.25, na.rm = TRUE), 
                                        upper = ~ quantile(.x, 0.75, na.rm = TRUE)))) |> 
@@ -21,7 +21,7 @@ agg_covr_main <- function(dgp) {
            bart = paste0(bart_median, " (", bart_lower, ", ", bart_upper, ")"),
            tmle = paste0(tmle_median, " (", tmle_lower, ", ", tmle_upper, ")"), 
            cvtmle = paste0(cvtmle_median, " (", cvtmle_lower, ", ", cvtmle_upper, ")")) |>
-    select(cbps, gcomp, bart, tmle, cvtmle)
+    select(n, cbps, gcomp, bart, tmle, cvtmle)
 }
 
 dgps <- levels(interaction("DGP_5_1", c("1", "2", "3"), c(FALSE, TRUE), sep = "_"))
@@ -30,17 +30,17 @@ dgps <- dgps[order(dgps)]
 coverage <- map_dfr(dgps, agg_covr_main)
 
 coverage <- mutate(coverage, 
-                   Class = c("No int., no HTE", 
-                             "No int., HTE", 
-                             "2-way int., no HTE", 
-                             "2-way int., HTE", 
-                             "3-way int., no HTE", 
-                             "3-way int., HTE")) |> 
+                   Class = rep(c("No int., no HTE", 
+                                 "No int., HTE", 
+                                 "2-way int., no HTE", 
+                                 "2-way int., HTE", 
+                                 "3-way int., no HTE", 
+                                 "3-way int., HTE"), each = 3)) |> 
   select(Class, everything())
 
 kbl(coverage, "latex", booktabs = TRUE, linesep = "", 
     align = c("lccccc"), 
-    col.names = c("", "IPW", "G comp.", "BART", "TMLE", "CV-TMLE")) |> 
+    col.names = c("", "n", "IPW", "G comp.", "BART", "TMLE", "CV-TMLE")) |> 
   clipr::write_clip()
 
 # Supplementary -----------------------------------------------------------
