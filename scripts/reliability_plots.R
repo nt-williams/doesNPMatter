@@ -100,7 +100,7 @@ print({
   map2(c("minimal", "moderate", "severe"),
        c("Pos. violation: minimal", "moderate", "severe"),
        \(pos, sub) ecdf_plot(filter(bias, n == 1000, positivity_violation == pos),
-                             filter(bias2, positivity_violation == pos),
+                             filter(bias2, n == 1000, positivity_violation == pos),
                              "|Bias|", sub, c(0, 0.25))) |>
     reduce(`+`)
 })
@@ -111,7 +111,7 @@ print({
   map2(c("minimal", "moderate", "severe"), 
        c("Pos. violation: minimal", "moderate", "severe"),
        \(pos, sub) ecdf_plot(filter(mse, n == 1000, positivity_violation == pos), 
-                             filter(mse2, positivity_violation == pos),
+                             filter(mse2, n == 1000, positivity_violation == pos),
                              "MSE", sub, c(0, 0.05), 0.01)) |> 
     reduce(`+`) 
 })
