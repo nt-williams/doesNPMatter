@@ -62,23 +62,31 @@ ecdf_plot <- function(data, data2, xlab, subtitle, xlim, seq = 0.05) {
   pts <- 0.75
   ts <- 7
   ggplot(data) +
-    geom_line(aes(x = abs(cbps.psi), y = 1 - ..y.., color = "#271F30"), 
+    geom_line(aes(x = abs(cbps.psi), y = 1 - after_stat(y), color = "#271F30"), 
               stat = 'ecdf', alpha = 0.65, size = pt_to_mm(0.9)) +
-    geom_line(aes(x = abs(gcomp.psi), y = 1 - ..y.., color = "#548C64"), 
+    geom_line(aes(x = abs(gcomp.psi), y = 1 - after_stat(y), color = "#548C64"), 
               stat = 'ecdf', alpha = 0.65, size = pt_to_mm(0.9)) + 
-    geom_line(aes(x = abs(bart.psi), y = 1 - ..y.., color = "#D5A021"), 
+    geom_line(aes(x = abs(bart.psi), y = 1 - after_stat(y), color = "#D5A021"), 
               stat = 'ecdf', alpha = 0.65, size = pt_to_mm(0.9)) + 
-    geom_line(aes(x = abs(tmle.psi), y = 1 - ..y.., color = "#C03221"), 
-              stat = 'ecdf', alpha = 0.65, size = pt_to_mm(0.9)) + 
+    # geom_line(aes(x = abs(tmle.psi), y = 1 - after_stat(y), color = "#C03221"), 
+    #           stat = 'ecdf', alpha = 0.65, size = pt_to_mm(0.9)) + 
     {
       if (nrow(data2) > 0) {
-        geom_line(data = data2, aes(x = abs(cvtmle.psi), y = 1 - ..y.., color = "#B47EB3"), 
+        geom_line(data = data2, aes(x = abs(cvtmle.psi), y = 1 - after_stat(y), color = "#B47EB3"), 
                   stat = 'ecdf', alpha = 0.65, size = pt_to_mm(0.9))
       }
     } + 
     scale_color_identity(
-      breaks = c("#271F30", "#548C64", "#D5A021", "#C03221", "#B47EB3"),
-      labels = c("IPTW-CBPS", "G-comp.", "BART", "TMLE", "CV-TMLE"),
+      breaks = c("#271F30", 
+                 "#548C64", 
+                 "#D5A021", 
+                 # "#C03221", 
+                 "#B47EB3"),
+      labels = c("IPTW-CBPS", 
+                 "G-comp.", 
+                 "BART", 
+                 # "TMLE", 
+                 "CV-TMLE"),
       guide = "legend"
     ) + 
     labs(
@@ -99,7 +107,7 @@ ecdf_plot <- function(data, data2, xlab, subtitle, xlim, seq = 0.05) {
           },
           legend.background = element_rect(fill = "white",
                                            color = "black",
-                                           size = pt_to_mm(pts)),
+                                           linewidth = pt_to_mm(pts)),
           axis.text = element_text(size = ts, colour = "black"),
           axis.line = element_line(size = pt_to_mm(pts)),
           axis.ticks = element_line(size = pt_to_mm(pts)),

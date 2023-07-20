@@ -7,7 +7,7 @@ suppressPackageStartupMessages({
 
 source("R/utils.R")
 
-dgp <- "DGP_5_1_3_TRUE"
+dgp <- "DGP_5_1_1_FALSE"
 res <- readRDS(glue("data/sims/res_{dgp}.rds"))
 res2 <- readRDS(glue("data/sims/res_cvtmle_{dgp}.rds"))
 
