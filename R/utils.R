@@ -82,11 +82,11 @@ ecdf_plot <- function(data, data2, xlab, subtitle, xlim, seq = 0.05) {
                  "#D5A021", 
                  # "#C03221", 
                  "#B47EB3"),
-      labels = c("IPTW-CBPS", 
-                 "G-comp.", 
-                 "BART", 
+      labels = c("parametric, IPTW-CBPS", 
+                 "parametric plug-in, G-comp", 
+                 "nonparametric, BART", 
                  # "TMLE", 
-                 "CV-TMLE"),
+                 "nonparametric, CV-TMLE"),
       guide = "legend"
     ) + 
     labs(
@@ -102,7 +102,7 @@ ecdf_plot <- function(data, data2, xlab, subtitle, xlim, seq = 0.05) {
     scale_y_continuous(expand = c(0.01, 0)) + 
     theme(text = element_text(size = ts),
           legend.position = {
-            if (subtitle == "1000" || subtitle == "severe") c(0.76, 0.9)
+            if (subtitle == "1000" || subtitle == "severe") c(0.65, 0.85)
             else "none"
           },
           legend.background = element_rect(fill = "white",
@@ -111,7 +111,7 @@ ecdf_plot <- function(data, data2, xlab, subtitle, xlim, seq = 0.05) {
           axis.text = element_text(size = ts, colour = "black"),
           axis.line = element_line(size = pt_to_mm(pts)),
           axis.ticks = element_line(size = pt_to_mm(pts)),
-          legend.text = element_text(size = ts), 
+          legend.text = element_text(size = 6), 
           legend.key.size = unit(0.2, 'cm')) + 
     guides(guide_legend(override.aes = list(size = 0.1)))
 }
