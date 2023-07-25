@@ -3,6 +3,7 @@ suppressPackageStartupMessages({
   library(glue)
   library(patchwork)
   library(ragg)
+  library(kableExtra)
 })
 
 source("R/utils.R")
@@ -66,6 +67,20 @@ mcse <- mutate(mcse,
        mcse_mse = pmax(mcse_mse.x, mcse_mse.y, na.rm = TRUE)) |> 
   select(-ends_with(".x"), -ends_with(".y"))
 
+group_by(mcse, n) |> 
+  summarise(across(starts_with("mcse"), mean, .names = "mean_{.col}"), 
+            across(starts_with("mcse"), sd, .names = "sd_{.col}")) |> 
+  mutate(across(contains("mcse"), ~ sprintf("%.4f", .x))) |> 
+  mutate(mcse_bias = glue("{mean_mcse_bias} ({sd_mcse_bias})"), 
+         mcse_var = glue("{mean_mcse_var} ({sd_mcse_var})"), 
+         mcse_mse = glue("{mean_mcse_mse} ({sd_mcse_mse})")) |> 
+  select(-starts_with("mean"), -starts_with("sd")) |> 
+  kable(col.names = c("n", "Bias", "Variance", "MSE"), 
+        format = "latex", 
+        booktabs = TRUE, 
+        align = c("lccc"), 
+        caption = "Average (and standard deviation) of the distributions of the maximum Monte Carlo error among the five considered estimators.")
+  
 width <- 6.99866 + 1
 height <- width - 1
 agg_png(glue("figs/mcse.png"), width = width, height = height, units = "in", res = 400)
