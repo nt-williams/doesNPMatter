@@ -68,7 +68,7 @@ mcse <- mutate(mcse,
 
 width <- 6.99866 + 1
 height <- width - 1
-agg_png(glue("figs/mscse.png"), width = width, height = height, units = "in", res = 400)
+agg_png(glue("figs/mcse.png"), width = width, height = height, units = "in", res = 400)
 pts <- 0.75
 ts <- 7
 map2(c("mcse_bias", "mcse_var", "mcse_mse"), 
