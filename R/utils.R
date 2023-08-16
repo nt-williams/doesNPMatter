@@ -58,7 +58,7 @@ pt_to_mm <- function(pt) {
   pt / ggplot2::.pt
 }
 
-ecdf_plot <- function(data, data2, xlab, subtitle, xlim, seq = 0.05) {
+ecdf_plot <- function(data, data2, data3, xlab, subtitle, xlim, seq = 0.05) {
   pts <- 0.75
   ts <- 7
   ggplot(data) +
@@ -76,16 +76,22 @@ ecdf_plot <- function(data, data2, xlab, subtitle, xlim, seq = 0.05) {
                   stat = 'ecdf', alpha = 0.65, size = pt_to_mm(0.9))
       }
     } + 
+    {
+      if (nrow(data3) > 0) {
+        geom_line(data = data3, aes(x = abs(gcomp.psi), y = 1 - after_stat(y), color = "#C03221"), 
+                  stat = 'ecdf', alpha = 0.65, size = pt_to_mm(0.9))
+      }
+    } + 
     scale_color_identity(
       breaks = c("#271F30", 
                  "#548C64", 
+                 "#C03221", 
                  "#D5A021", 
-                 # "#C03221", 
                  "#B47EB3"),
       labels = c("parametric, IPTW-CBPS", 
-                 "parametric plug-in, G-comp", 
+                 "parametric plug-in, G-comp",
+                 "parametric plug-in, G-comp w/TCI", 
                  "nonparametric, BART", 
-                 # "TMLE", 
                  "nonparametric, CV-TMLE"),
       guide = "legend"
     ) + 
@@ -111,7 +117,7 @@ ecdf_plot <- function(data, data2, xlab, subtitle, xlim, seq = 0.05) {
           axis.text = element_text(size = ts, colour = "black"),
           axis.line = element_line(size = pt_to_mm(pts)),
           axis.ticks = element_line(size = pt_to_mm(pts)),
-          legend.text = element_text(size = 6), 
+          legend.text = element_text(size = 5), 
           legend.key.size = unit(0.2, 'cm')) + 
     guides(guide_legend(override.aes = list(size = 0.1)))
 }

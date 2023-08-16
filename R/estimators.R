@@ -1,5 +1,10 @@
-gcomp <- function(data) {
-  f <- reformulate(c("t", grep("^x_", names(data), value = TRUE)), "y")
+gcomp <- function(data, tci = FALSE) {
+  if (tci) {
+    f <- as.formula(paste0("y~t", "*(", paste(grep("^x_", names(data), value = TRUE), collapse = "+"), ")"))
+  } else {
+    f <- reformulate(c("t", grep("^x_", names(data), value = TRUE)), "y")
+  }
+  
   fit <- marginaleffects::comparisons(glm(f, data = data, family = "binomial"), 
                                       variables = list(t = 0:1))
   list(psi = summary(fit)$estimate, 
