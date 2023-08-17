@@ -9,19 +9,22 @@ source("R/utils.R")
 agg_covr_main <- function(dgp) {
   res1 <- readRDS(glue("data/sims/coverage_{dgp}.rds"))
   res2 <- readRDS(glue("data/sims/coverage_cvtmle_{dgp}.rds"))
+  res3 <- readRDS(glue("data/sims/coverage_tci_{dgp}.rds"))
   
   left_join(res1, select(res2, id, n, cvtmle)) |> 
+    left_join(select(res3, id, n, gcomp2 = gcomp)) |> 
     group_by(n) |> 
-    summarise(across(cbps:cvtmle, list(median = ~ median(.x, na.rm = TRUE), 
+    summarise(across(cbps:gcomp2, list(median = ~ median(.x, na.rm = TRUE), 
                                        lower = ~ quantile(.x, 0.25, na.rm = TRUE), 
                                        upper = ~ quantile(.x, 0.75, na.rm = TRUE)))) |> 
-    mutate(across(cbps_median:cvtmle_upper, sprintf, fmt = '%.2f')) |>
+    mutate(across(cbps_median:gcomp2_upper, sprintf, fmt = '%.2f')) |>
     mutate(cbps = paste0(cbps_median, " (", cbps_lower, ", ", cbps_upper, ")"),
-           gcomp = paste0(gcomp_median, " (", gcomp_lower, ", ", gcomp_upper, ")"),
+           gcomp1 = paste0(gcomp_median, " (", gcomp_lower, ", ", gcomp_upper, ")"),
+           gcomp2 = paste0(gcomp2_median, " (", gcomp2_lower, ", ", gcomp2_upper, ")"),
            bart = paste0(bart_median, " (", bart_lower, ", ", bart_upper, ")"),
            tmle = paste0(tmle_median, " (", tmle_lower, ", ", tmle_upper, ")"), 
            cvtmle = paste0(cvtmle_median, " (", cvtmle_lower, ", ", cvtmle_upper, ")")) |>
-    select(n, cbps, gcomp, bart, tmle, cvtmle)
+    select(n, cbps, gcomp1, gcomp2, bart, tmle, cvtmle)
 }
 
 dgps <- levels(interaction("DGP_5_1", c("1", "2", "3"), c(FALSE, TRUE), sep = "_"))
@@ -40,7 +43,7 @@ coverage <- mutate(coverage,
 
 kbl(coverage, "latex", booktabs = TRUE, linesep = "", 
     align = c("lccccc"), 
-    col.names = c("", "n", "IPW", "G comp.", "BART", "TMLE", "CV-TMLE")) |> 
+    col.names = c("", "n", "IPW", "G comp.", "G comp w/TCI", "BART", "TMLE", "CV-TMLE")) |> 
   clipr::write_clip()
 
 # Supplementary -----------------------------------------------------------
